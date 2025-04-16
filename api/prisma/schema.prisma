@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Theme {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum TaskInsertPosition {
+  BOTTOM
+  TOP
+}
+
+enum Lang {
+  JA
+  EN
+}
+
+model ShareCode {
+  code       String @id @default(uuid())
+  taskListId String
+}
+
+model TaskList {
+  id     String @id
+  name   String
+  tasks  Json
+  update Bytes
+}
+
+model App {
+  id                 Int                @id @default(autoincrement())
+  userId             String             @unique @db.Uuid
+  taskInsertPosition TaskInsertPosition @default(BOTTOM)
+  taskListIds        String[]           @default([])
+  update             Bytes
+}
+
+model Profile {
+  id          Int    @id @default(autoincrement())
+  userId      String @unique @db.Uuid
+  displayName String @default("")
+}
+
+model Preferences {
+  id     Int    @id @default(autoincrement())
+  userId String @unique @db.Uuid
+  lang     Lang    @default(JA)
+  theme    Theme   @default(SYSTEM)
+  autoSort Boolean @default(false)
+}

@@ -1,0 +1,19 @@
+.DS_Store
+
+/node_modules
+
+/.env
+/.env.local
+/.env.development
+/.env.production
+/.next
+/next-env.d.ts
+/tsconfig.tsbuildinfo
+
+/design/**/*~lock~
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+/tmp
+.aider*
