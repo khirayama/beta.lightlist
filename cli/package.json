@@ -1,0 +1,23 @@
+{
+  "name": "lightlist-cli",
+  "version": "1.0.0",
+  "description": "CLI for Lightlist",
+  "main": "index.js",
+  "bin": {
+    "lightlist": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "lightlist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^10.0.0",
+    "inquirer": "^8.2.5",
+    "node-fetch": "^2.6.9"
+  }
+}
