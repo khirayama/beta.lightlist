@@ -116,9 +116,9 @@ max_frequency = "1s"
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
-[auth.email.template.magic_link]
-subject = "Lightlist | ログインする | Sign in to your account"
-content_path = "./supabase/templates/magiclink.html"
+# [auth.email.template.magic_link]
+# subject = "Lightlist | ログインする | Sign in to your account"
+# content_path = "./supabase/templates/magiclink.html"
 
 # [auth.email.template.recovery]
 # subject = "Lightlist | パスワードリセット | Reset your password"
