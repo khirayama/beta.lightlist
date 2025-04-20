@@ -18,6 +18,13 @@ function saveConfig(config) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
 }
 
+function loadConfig() {
+  if (fs.existsSync(CONFIG_FILE)) {
+    return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+  }
+  return null;
+}
+
 program
   .command('signup')
   .description('Sign up for a new account')
@@ -168,7 +175,7 @@ program
   .action(() => {
     try {
       if (fs.existsSync(CONFIG_FILE)) {
-        const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        const config = loadConfig();
         if (config.user) {
           console.log(`Logged in as: ${config.user.email}`);
         } else {
