@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { program } = require('commander');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const inquirer = require('inquirer');
 const fs = require('fs');
 const path = require('path');
@@ -67,25 +67,14 @@ program
       ]);
 
       console.log('Signing up...');
-      
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: answers.email,
-          password: answers.password,
-          lang: answers.lang
-        })
+
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+        email: answers.email,
+        password: answers.password,
+        lang: answers.lang
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(`Error: ${data.error}`);
-        return;
-      }
+      const data = response.data;
 
       saveConfig({
         user: data.user,
@@ -95,7 +84,11 @@ program
       console.log('Signup successful!');
       console.log(`Welcome to Lightlist, ${data.user.email.split('@')[0]}!`);
     } catch (error) {
-      console.error('Signup failed:', error.message);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(`Error: ${error.response.data.error || 'Signup failed'}`);
+      } else {
+        console.error('Signup failed:', error.message);
+      }
     }
   });
 
@@ -131,24 +124,13 @@ program
       ]);
 
       console.log('Logging in...');
-      
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: answers.email,
-          password: answers.password
-        })
+
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email: answers.email,
+        password: answers.password
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error(`Error: ${data.error || 'Login failed'}`);
-        return;
-      }
+      const data = response.data;
 
       saveConfig({
         user: data.user,
@@ -158,7 +140,11 @@ program
       console.log('Login successful!');
       console.log(`Welcome back, ${data.user.email.split('@')[0]}!`);
     } catch (error) {
-      console.error('Login failed:', error.message);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(`Error: ${error.response.data.error || 'Login failed'}`);
+      } else {
+        console.error('Login failed:', error.message);
+      }
     }
   });
 
