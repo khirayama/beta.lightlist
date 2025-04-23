@@ -2,11 +2,14 @@
   "name": "lightlist-cli",
   "version": "1.0.0",
   "description": "CLI for Lightlist",
-  "main": "index.js",
+  "main": "dist/index.js",
   "bin": {
-    "lightlist": "./index.js"
+    "lightlist": "./dist/index.js"
   },
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,5 +22,12 @@
     "axios": "^1.8.4",
     "commander": "^10.0.0",
     "inquirer": "^8.2.5"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.0",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.14.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
