@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "15.1.7",
+    "@types/cors": "2.8.17",
     "@types/node": "22.13.5",
     "@types/path-to-regexp": "1.7.0",
     "@types/react": "19.1.2",
