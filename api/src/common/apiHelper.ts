@@ -1,7 +1,29 @@
 import { PrismaClient } from "@prisma/client";
-import type { NextApiRequest } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
+import Cors from 'cors';
 
 import { createSupabaseClient } from "common/supabase";
+
+function runMiddleware(req: any, res: any, fn: Function) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
+
+const cors = Cors({
+  origin: 'http://localhost:3001',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+});
+
+export async function corsMiddleware(req: NextApiRequest, res: NextApiResponse) {
+  await runMiddleware(req, res, cors);
+}
 
 const supabase = createSupabaseClient();
 
