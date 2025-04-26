@@ -3,7 +3,7 @@ import type { App as AppType, TaskList as TaskListType } from "@prisma/client";
 import * as Y from "yjs";
 import { v4 as uuid } from "uuid";
 
-import { createPrismaClient } from "common/apiHelper";
+import { createPrismaClient, corsMiddleware } from "common/apiHelper";
 import { createSupabaseClient } from "common/supabase";
 
 const prisma = createPrismaClient();
@@ -18,6 +18,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  await corsMiddleware(req, res);
+
   if (req.method === "POST") {
     const email = req.body.email;
     const password = req.body.password;
@@ -102,8 +104,16 @@ export default async function handler(
     });
 
     return res.status(200).json({
-      user,
-      session,
+      session: {
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        expiresAt: session.expires_at,
+        expiresIn: session.expires_in,
+      },
+      user: {
+        id: user.id,
+        email: user.email,
+      },
     });
   }
 }
