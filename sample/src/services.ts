@@ -91,3 +91,23 @@ export function getApp() {
       });
   });
 }
+
+export function getTaskLists() {
+  return refreshToken().then(() => {
+    const s = loadSession();
+
+    return axios
+      .get("/api/task-lists", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
