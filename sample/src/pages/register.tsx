@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+import { register } from "../services";
+import { saveSession } from "../utils";
+
 export default function RegisterPage() {
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("password");
@@ -10,10 +13,19 @@ export default function RegisterPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log({
+          register({
             email,
             password,
-          });
+          })
+            .then((r) => {
+              saveSession(r);
+              window.location.href = "/app";
+            })
+            .catch((err) => {
+              if (err.message === "User already registered") {
+                window.location.href = "/login";
+              }
+            });
         }}
       >
         <div>
@@ -40,6 +52,9 @@ export default function RegisterPage() {
           <button>Submit</button>
         </div>
       </form>
+      <div>
+        <a href="/login">Log In</a>
+      </div>
     </div>
   );
 }
