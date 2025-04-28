@@ -1,7 +1,7 @@
+import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { corsMiddleware } from "common/apiHelper";
-import { createSupabaseClient } from "common/supabase";
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,10 +12,25 @@ export default async function handler(
   if (req.method === "POST") {
     const refreshToken = req.body.refreshToken;
 
-    const supabase = createSupabaseClient();
-    const { data: { session, user }, error } = await supabase.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
+    let session = null;
+    let user = null;
+    let error = null;
+    try {
+      const r = await axios.post('/auth/v1/token?grant_type=refresh_token', {
+        refresh_token: refreshToken,
+      }, {
+        baseURL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        },
+      });
+      session = r.data;
+      user = session.user;
+    } catch (err) {
+      console.log(err);
+      error = err;
+    }
 
     if (error) {
       return res.status(400).json({ error: error.message });
