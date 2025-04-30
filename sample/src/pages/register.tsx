@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { register } from "../services";
+import { register } from "../sdk/services";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("user@example.com");
@@ -16,7 +16,7 @@ export default function RegisterPage() {
             email,
             password,
           })
-            .then((r) => {
+            .then(() => {
               window.location.href = "/app";
             })
             .catch((err) => {

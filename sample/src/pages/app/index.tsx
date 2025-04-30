@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 
-import { getApp, getTaskLists } from "../../services";
+import { setSessionStorage } from "../../sdk/session";
+import { getApp, getTaskLists } from "../../sdk/services";
+import { insertTask } from "../../sdk/actions";
+
+setSessionStorage("web");
 
 export default function AppPage() {
   const [taskLists, setTaskLists] = useState({});
@@ -38,7 +42,6 @@ export default function AppPage() {
       </div>
       <div style={{ display: "flex" }}>
         <ul>
-          {" "}
           {app?.taskListIds.map((tlid) => {
             const taskList = taskLists[tlid];
             return (
@@ -61,7 +64,7 @@ export default function AppPage() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (newTaskText !== "") {
-                      console.log("create task", newTaskText);
+                      insertTask();
                       setNewTaskText("");
                     }
                   }}

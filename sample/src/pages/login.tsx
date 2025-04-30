@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { login } from "../services";
+import { login } from "../sdk/services";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("user@example.com");
