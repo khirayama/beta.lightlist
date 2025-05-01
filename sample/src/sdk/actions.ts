@@ -14,6 +14,8 @@ import {
  * getTaskLists
  * insertTask
  * updateTask
+ * sortTasks
+ * clearCompletedTasks
  */
 
 export function getApp() {
@@ -82,6 +84,80 @@ export function updateTask(
   taskMap.set("text", newTask.text);
   taskMap.set("completed", newTask.completed);
   taskMap.set("date", newTask.date);
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map<any>>;
+
+  taskArray.doc.transact(() => {
+    const sortedTasks = taskArray.toJSON().sort((a, b) => {
+      if (a.completed && !b.completed) {
+        return 1;
+      }
+      if (!a.completed && b.completed) {
+        return -1;
+      }
+      if (!a.date && b.date) {
+        return 1;
+      }
+      if (a.date && !b.date) {
+        return -1;
+      }
+      if (a.date > b.date) {
+        return 1;
+      }
+      if (a.date < b.date) {
+        return -1;
+      }
+      return 0;
+    });
+    for (let i = sortedTasks.length - 1; i >= 0; i--) {
+      for (let j = 0; j < taskArray.length; j++) {
+        const task = taskArray.get(j);
+        if (task.get("id") === sortedTasks[i].id) {
+          const t = task.clone();
+          taskArray.delete(j);
+          taskArray.insert(0, [t]);
+          break;
+        }
+      }
+    }
+  });
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+export function clearCompletedTasks(
+  taskListId: string
+): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map<any>>;
+
+  taskArray.doc.transact(() => {
+    for (let i = taskArray.length - 1; i >= 0; i--) {
+      const task = taskArray.get(i);
+      if (task.get("completed")) {
+        taskArray.delete(i);
+      }
+    }
+  });
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
