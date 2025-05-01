@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { TaskList } from "./types";
 import { sessionStorage } from "./session";
 
 const API_URL = "http://localhost:3000";
@@ -100,6 +101,26 @@ export function getTaskLists() {
 
     return axios
       .get("/api/task-lists", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function updateTaskList(newTaskList: Partial<TaskList>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .patch(`/api/task-lists/${newTaskList.id}`, newTaskList, {
         baseURL: API_URL,
         headers: {
           Authorization: `Bearer ${s.session.accessToken}`,
