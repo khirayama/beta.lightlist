@@ -6,6 +6,8 @@ import { sessionStorage } from "./session";
 const API_URL = "http://localhost:3000";
 
 const refreshToken = (() => {
+  console.warn("Refresh token called");
+
   let isRefreshing = null;
 
   return () => {
