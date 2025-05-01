@@ -1,39 +1,42 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 
 import { setSessionStorage } from "../../sdk/session";
-import { getApp, getTaskLists } from "../../sdk/services";
-import { insertTask } from "../../sdk/actions";
+import {
+  getApp,
+  getTaskLists,
+  insertTask,
+  updateTask,
+} from "../../sdk/actions";
+import { store } from "../../sdk/store";
 
 setSessionStorage("web");
 
 export default function AppPage() {
-  const [taskLists, setTaskLists] = useState({});
-  const [app, setApp] = useState(null);
   const [selectedTaskListId, setSelectedTaskListId] = useState(null);
   const [newTaskText, setNewTaskText] = useState("");
 
   useEffect(() => {
     getApp()
       .then((res) => {
-        setApp(res.app);
         setSelectedTaskListId(res.app.taskListIds[0]);
       })
       .catch((err) => {
         console.error(err);
       });
-    getTaskLists()
-      .then((res) => {
-        setTaskLists(
-          res.taskLists.reduce((acc, tl) => {
-            acc[tl.id] = tl;
-            return acc;
-          }, {})
-        );
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    getTaskLists().catch((err) => {
+      console.error(err);
+    });
   }, []);
+
+  const state = useSyncExternalStore(
+    store.subscribe,
+    () => store.data,
+    () => store.data
+  );
+
+  const app = state.app;
+  const taskLists = state.taskLists;
+  const taskList = taskLists[selectedTaskListId];
 
   return (
     <div>
@@ -43,7 +46,7 @@ export default function AppPage() {
       <div style={{ display: "flex" }}>
         <ul>
           {app?.taskListIds.map((tlid) => {
-            const taskList = taskLists[tlid];
+            const tl = taskLists[tlid];
             return (
               <li
                 key={tlid}
@@ -51,7 +54,7 @@ export default function AppPage() {
                   setSelectedTaskListId(tlid);
                 }}
               >
-                {taskList?.name}({taskList?.tasks.length})
+                {tl?.name}({tl?.tasks.length})
               </li>
             );
           })}
@@ -64,7 +67,11 @@ export default function AppPage() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (newTaskText !== "") {
-                      insertTask();
+                      insertTask(
+                        selectedTaskListId,
+                        { text: newTaskText },
+                        taskList.tasks.length
+                      );
                       setNewTaskText("");
                     }
                   }}
@@ -84,7 +91,18 @@ export default function AppPage() {
                 {taskLists[selectedTaskListId].tasks.map((task) => {
                   return (
                     <li key={task.id}>
-                      {task.name} ({task.status})
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={(e) => {
+                          const completed = e.currentTarget.checked;
+                          updateTask(selectedTaskListId, {
+                            ...task,
+                            completed,
+                          });
+                        }}
+                      />
+                      {task.text}
                     </li>
                   );
                 })}
