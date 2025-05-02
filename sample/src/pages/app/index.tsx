@@ -4,6 +4,7 @@ import { setSessionStorage } from "../../sdk/session";
 import {
   getApp,
   getTaskLists,
+  insertTaskList,
   insertTask,
   updateTask,
   sortTasks,
@@ -13,7 +14,7 @@ import { store } from "../../sdk/store";
 import { Task } from "../../sdk/types";
 
 /* Features
- * [ ] タスクリストの追加
+ * [x] タスクリストの追加
  * [ ] タスクリストの削除
  * [ ] タスクリストの更新(タスクリスト名)
  * [ ] タスクリストの移動
@@ -61,6 +62,7 @@ function TaskTextInput(props: TaskTextInputProps) {
 export default function AppPage() {
   const [selectedTaskListId, setSelectedTaskListId] = useState(null);
   const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskListName, setNewTaskListName] = useState("");
 
   useEffect(() => {
     getApp()
@@ -92,6 +94,28 @@ export default function AppPage() {
       </div>
       <div style={{ display: "flex" }}>
         <ul>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (newTaskListName !== "") {
+                insertTaskList(
+                  { name: newTaskListName },
+                  app.taskListIds.length
+                );
+                setNewTaskListName("");
+              }
+            }}
+          >
+            <input
+              type="text"
+              placeholder="New Task List"
+              value={newTaskListName}
+              onChange={(e) => {
+                setNewTaskListName(e.currentTarget.value);
+              }}
+            />
+            <button>Add Task List</button>
+          </form>
           {app?.taskListIds.map((tlid) => {
             const tl = taskLists[tlid];
             return (

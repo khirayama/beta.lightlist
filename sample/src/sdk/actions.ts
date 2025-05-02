@@ -7,7 +7,9 @@ import {
   register as registerAsync,
   login as loginAsync,
   getApp as getAppAsync,
+  updateApp as updateAppAsync,
   getTaskLists as getTaskListsAsync,
+  createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
 } from "./services";
 
@@ -31,7 +33,7 @@ import {
  *
  * *TaskList
  * [x] getTaskLists
- * [ ] insertTaskList
+ * [x] insertTaskList
  * [ ] updateTaskList
  * [ ] deleteTaskList
  * [ ] moveTaskList
@@ -94,6 +96,39 @@ export function getTaskLists() {
     store.emit();
     return res;
   });
+}
+
+export function insertTaskList(
+  taskList: Partial<TaskList>,
+  index: number
+): [TaskList, Promise<any>] {
+  const id = uuid();
+  const doc = new Y.Doc();
+  store.docs.taskLists[id] = doc;
+
+  const taskListMap = doc.getMap(id);
+  taskListMap.set("id", id);
+  taskListMap.set("name", taskList.name || "");
+  const taskArray = new Y.Array();
+  taskListMap.set("tasks", taskArray);
+
+  const appDoc = store.docs.app;
+  const appMap = appDoc.getMap("app");
+  const taskListIds = appMap.get("taskListIds") as Y.Array<string>;
+  taskListIds.insert(index, [id]);
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  const app = appMap.toJSON() as App;
+  app.update = Y.encodeStateAsUpdate(appDoc);
+
+  store.data.app = app;
+  store.docs.app = appDoc;
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, Promise.all([createTaskListAsync(tl), updateAppAsync(app)])];
 }
 
 function sortTasksWithoutEmit(taskListId: string) {

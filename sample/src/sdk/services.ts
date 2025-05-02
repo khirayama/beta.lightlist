@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { TaskList } from "./types";
+import { App, TaskList } from "./types";
 import { sessionStorage } from "./session";
 
 const API_URL = "http://localhost:3000";
@@ -97,6 +97,26 @@ export function getApp() {
   });
 }
 
+export function updateApp(newApp: Partial<App>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .patch("/api/app", newApp, {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
 export function getTaskLists() {
   return refreshToken().then(() => {
     const s = sessionStorage.load();
@@ -123,6 +143,26 @@ export function updateTaskList(newTaskList: Partial<TaskList>) {
 
     return axios
       .patch(`/api/task-lists/${newTaskList.id}`, newTaskList, {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function createTaskList(newTaskList: Partial<TaskList>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .post("/api/task-lists", newTaskList, {
         baseURL: API_URL,
         headers: {
           Authorization: `Bearer ${s.session.accessToken}`,
