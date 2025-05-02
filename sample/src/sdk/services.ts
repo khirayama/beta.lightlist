@@ -20,8 +20,6 @@ const refreshToken = (() => {
       const min3 = 60 * 3;
 
       if (s.session.expiresAt - Date.now() / 1000 < min3) {
-        isRefreshing = true;
-
         axios
           .post(
             "/api/auth/refresh",
@@ -33,13 +31,15 @@ const refreshToken = (() => {
             }
           )
           .then((res) => {
-            isRefreshing = null;
             sessionStorage.save(res.data);
             return resolve(res.data);
           })
           .catch((err) => {
             reject(err);
             throw new Error(err.response.data.error);
+          })
+          .finally(() => {
+            isRefreshing = null;
           });
       } else {
         resolve(s);
