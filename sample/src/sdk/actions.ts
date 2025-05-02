@@ -4,20 +4,63 @@ import * as Y from "yjs";
 import { TaskList, Task, App } from "./types";
 import { store } from "./store";
 import {
+  register as registerAsync,
+  login as loginAsync,
   getApp as getAppAsync,
   getTaskLists as getTaskListsAsync,
   updateTaskList as updateTaskListAsync,
 } from "./services";
 
 /*
- * getApp
- * getTaskLists
- * insertTask
- * updateTask
- * sortTasks
- * clearCompletedTasks
+ * *Auth
+ * [x] register
+ * [x] login
+ * [ ] updateEmail
+ *
+ * *App
+ * [x] getApp
+ * [ ] updateApp
+ *
+ * *Preferences
+ * [ ] getPreferences
+ * [ ] updatePreferences
+ *
+ * *Profile
+ * [ ] getProfile
+ * [ ] updateProfile
+ *
+ * *TaskList
+ * [x] getTaskLists
+ * [ ] insertTaskList
+ * [ ] updateTaskList
+ * [ ] deleteTaskList
+ * [ ] moveTaskList
+ * [x] sortTasks
+ * [x] clearCompletedTasks
+ * [ ] refreshShareCode
+ *
+ * *Task
+ * [x] insertTask
+ * [x] updateTask
+ * [ ] moveTask
  */
 
+/* Auth */
+export function register(creadentials: {
+  email: string;
+  password: string;
+}): Promise<any> {
+  return registerAsync(creadentials);
+}
+
+export function login(credentials: {
+  email: string;
+  password: string;
+}): Promise<any> {
+  return loginAsync(credentials);
+}
+
+/* App */
 export function getApp() {
   return getAppAsync().then((res) => {
     store.docs.app = new Y.Doc();
@@ -31,6 +74,11 @@ export function getApp() {
   });
 }
 
+/* Preferences */
+
+/* Profile */
+
+/* TaskList */
 export function getTaskLists() {
   return getTaskListsAsync().then((res) => {
     for (const tl of res.taskLists) {
@@ -48,53 +96,7 @@ export function getTaskLists() {
   });
 }
 
-export function insertTask(
-  taskListId: string,
-  task: Partial<Task>,
-  index: number
-): [TaskList, Promise<any>] {
-  const doc = store.docs.taskLists[taskListId];
-  const taskListMap = doc.getMap(taskListId);
-  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map<any>>;
-
-  const newTaskMap = new Y.Map();
-  newTaskMap.set("id", uuid());
-  newTaskMap.set("text", task.text || false);
-  newTaskMap.set("completed", task.completed || false);
-  newTaskMap.set("date", task.date || "");
-  taskArray.insert(index, [newTaskMap]);
-
-  const tl = taskListMap.toJSON() as TaskList;
-  tl.update = Y.encodeStateAsUpdate(doc);
-
-  store.data.taskLists[tl.id] = tl;
-  store.docs.taskLists[tl.id] = doc;
-  store.emit();
-  return [tl, updateTaskListAsync(tl)];
-}
-
-export function updateTask(
-  taskListId: string,
-  newTask: Partial<Task>
-): [TaskList, Promise<any>] {
-  const doc = store.docs.taskLists[taskListId];
-  const taskListMap = doc.getMap(taskListId);
-  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map</* FIXME */ any>>;
-  const taskMap = Array.from(taskArray).find((t) => t.get("id") === newTask.id);
-  taskMap.set("text", newTask.text);
-  taskMap.set("completed", newTask.completed);
-  taskMap.set("date", newTask.date);
-
-  const tl = taskListMap.toJSON() as TaskList;
-  tl.update = Y.encodeStateAsUpdate(doc);
-
-  store.data.taskLists[tl.id] = tl;
-  store.docs.taskLists[tl.id] = doc;
-  store.emit();
-  return [tl, updateTaskListAsync(tl)];
-}
-
-export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
+function sortTasksWithoutEmit(taskListId: string) {
   const doc = store.docs.taskLists[taskListId];
   const taskListMap = doc.getMap(taskListId);
   const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map<any>>;
@@ -136,6 +138,16 @@ export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+}
+
+export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+
+  sortTasksWithoutEmit(taskListId);
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
@@ -158,6 +170,61 @@ export function clearCompletedTasks(
       }
     }
   });
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+/* Task */
+export function insertTask(
+  taskListId: string,
+  task: Partial<Task>,
+  index: number
+): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map<any>>;
+
+  const newTaskMap = new Y.Map();
+  newTaskMap.set("id", uuid());
+  newTaskMap.set("text", task.text || false);
+  newTaskMap.set("completed", task.completed || false);
+  newTaskMap.set("date", task.date || "");
+  taskArray.insert(index, [newTaskMap]);
+
+  if (store.data.preferences.autoSort) {
+    sortTasksWithoutEmit(taskListId);
+  }
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+export function updateTask(
+  taskListId: string,
+  newTask: Partial<Task>
+): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map</* FIXME */ any>>;
+  const taskMap = Array.from(taskArray).find((t) => t.get("id") === newTask.id);
+  taskMap.set("text", newTask.text);
+  taskMap.set("completed", newTask.completed);
+  taskMap.set("date", newTask.date);
+
+  if (store.data.preferences.autoSort) {
+    sortTasksWithoutEmit(taskListId);
+  }
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
