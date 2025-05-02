@@ -6,10 +6,57 @@ import {
   getTaskLists,
   insertTask,
   updateTask,
+  sortTasks,
+  clearCompletedTasks,
 } from "../../sdk/actions";
 import { store } from "../../sdk/store";
+import { Task } from "../../sdk/types";
+
+/* Features
+ * [ ] タスクリストの追加
+ * [ ] タスクリストの削除
+ * [ ] タスクリストの更新(タスクリスト名)
+ * [ ] タスクリストの移動
+ *
+ * [x] タスクの並び替え
+ * [x] タスクの自動並び替え
+ * [x] タスクの削除
+ * [ ] タスクの移動
+ *
+ * [x] タスクの追加
+ * [x] タスクの更新(完了、テキスト、日付)
+ */
 
 setSessionStorage("web");
+
+// MEMO: handleXXは、component用のevent handlerの命名で、(props, state, payload)を持つ
+type ComponentEventHandler<P, S, V> = (props: P, state: S, val?: V) => void;
+
+interface TaskTextInputProps {
+  task: Task;
+  handleBlur: ComponentEventHandler<TaskTextInputProps, { text: string }, null>;
+}
+
+function TaskTextInput(props: TaskTextInputProps) {
+  const task = props.task;
+  const [text, setText] = useState(task.text);
+
+  useEffect(() => {
+    setText(task.text);
+  }, [task.text]);
+
+  return (
+    <input
+      type="text"
+      value={text}
+      onChange={(e) => {
+        const newText = e.currentTarget.value;
+        setText(newText);
+      }}
+      onBlur={(e) => props.handleBlur(props, { text }, null)}
+    />
+  );
+}
 
 export default function AppPage() {
   const [selectedTaskListId, setSelectedTaskListId] = useState(null);
@@ -86,6 +133,20 @@ export default function AppPage() {
                   />
                   <button>Add Task</button>
                 </form>
+                <button
+                  onClick={() => {
+                    sortTasks(selectedTaskListId);
+                  }}
+                >
+                  Sort tasks
+                </button>
+                <button
+                  onClick={() => {
+                    clearCompletedTasks(selectedTaskListId);
+                  }}
+                >
+                  Clear completed tasks
+                </button>
               </header>
               <ul>
                 {taskLists[selectedTaskListId].tasks.map((task) => {
@@ -102,7 +163,28 @@ export default function AppPage() {
                           });
                         }}
                       />
-                      {task.text}
+                      <TaskTextInput
+                        task={task}
+                        handleBlur={(_, { text }) => {
+                          if (text !== task.text) {
+                            updateTask(selectedTaskListId, {
+                              ...task,
+                              text,
+                            });
+                          }
+                        }}
+                      />
+                      <input
+                        type="date"
+                        value={task.date}
+                        onChange={(e) => {
+                          const date = e.currentTarget.value;
+                          updateTask(selectedTaskListId, {
+                            ...task,
+                            date,
+                          });
+                        }}
+                      />
                     </li>
                   );
                 })}
