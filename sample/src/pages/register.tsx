@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { register } from "../sdk/services";
+import { register } from "../sdk/actions";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("user@example.com");
