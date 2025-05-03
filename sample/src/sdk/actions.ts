@@ -8,12 +8,17 @@ import {
   login as loginAsync,
   getApp as getAppAsync,
   updateApp as updateAppAsync,
+  getPreferences as getPreferencesAsync,
+  getProfile as getProfileAsync,
   getTaskLists as getTaskListsAsync,
   createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
+  deleteTaskList as deleteTaskListAsync,
 } from "./services";
 
 /*
+ * [x] init
+ *
  * *Auth
  * [x] register
  * [x] login
@@ -24,18 +29,18 @@ import {
  * [ ] updateApp
  *
  * *Preferences
- * [ ] getPreferences
+ * [x] getPreferences
  * [ ] updatePreferences
  *
  * *Profile
- * [ ] getProfile
+ * [x] getProfile
  * [ ] updateProfile
  *
  * *TaskList
  * [x] getTaskLists
  * [x] insertTaskList
- * [ ] updateTaskList
- * [ ] deleteTaskList
+ * [x] updateTaskList
+ * [x] deleteTaskList
  * [ ] moveTaskList
  * [x] sortTasks
  * [x] clearCompletedTasks
@@ -46,6 +51,23 @@ import {
  * [x] updateTask
  * [ ] moveTask
  */
+
+export function init() {
+  return Promise.all([
+    getApp(),
+    getPreferences(),
+    getProfile(),
+    getTaskLists(),
+  ]).then((res) => {
+    console.log(res);
+    return {
+      app: res[0].app,
+      preferences: res[1].preferences,
+      profile: res[2].profile,
+      taskLists: res[3].taskLists,
+    };
+  });
+}
 
 /* Auth */
 export function register(creadentials: {
@@ -77,8 +99,22 @@ export function getApp() {
 }
 
 /* Preferences */
+export function getPreferences() {
+  return getPreferencesAsync().then((res) => {
+    store.data.preferences = res.preferences;
+    store.emit();
+    return res;
+  });
+}
 
 /* Profile */
+export function getProfile() {
+  return getProfileAsync().then((res) => {
+    store.data.profile = res.profile;
+    store.emit();
+    return res;
+  });
+}
 
 /* TaskList */
 export function getTaskLists() {
@@ -129,6 +165,43 @@ export function insertTaskList(
   store.docs.taskLists[tl.id] = doc;
   store.emit();
   return [tl, Promise.all([createTaskListAsync(tl), updateAppAsync(app)])];
+}
+
+export function updateTaskList(
+  taskList: Partial<TaskList>
+): [TaskList, Promise<any>] {
+  const doc = store.docs.taskLists[taskList.id];
+  const taskListMap = doc.getMap(taskList.id);
+  taskListMap.set("name", taskList.name || "");
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+export function deleteTaskList(
+  taskListId: string
+): [Promise<any>] {
+  const appDoc = store.docs.app;
+  const appMap = appDoc.getMap("app");
+  const taskListIdArray = appMap.get("taskListIds") as Y.Array<string>;
+  const index = taskListIdArray.toArray().indexOf(taskListId);
+
+  taskListIdArray.delete(index);
+
+  const app = appMap.toJSON() as App;
+  app.update = Y.encodeStateAsUpdate(appDoc);
+
+  store.data.app = app;
+  store.docs.app = appDoc;
+  delete store.data.taskLists[taskListId];
+  delete store.docs.taskLists[taskListId];
+  store.emit();
+  return [Promise.all([deleteTaskListAsync(taskListId), updateAppAsync(app)])];
 }
 
 function sortTasksWithoutEmit(taskListId: string) {
