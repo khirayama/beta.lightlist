@@ -6,8 +6,6 @@ import { sessionStorage } from "./session";
 const API_URL = "http://localhost:3000";
 
 const refreshToken = (() => {
-  console.warn("Refresh token called");
-
   let isRefreshing = null;
 
   return () => {
@@ -117,12 +115,72 @@ export function updateApp(newApp: Partial<App>) {
   });
 }
 
+export function getPreferences() {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .get("/api/preferences", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function getProfile() {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .get("/api/profile", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
 export function getTaskLists() {
   return refreshToken().then(() => {
     const s = sessionStorage.load();
 
     return axios
       .get("/api/task-lists", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function createTaskList(newTaskList: Partial<TaskList>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .post("/api/task-lists", newTaskList, {
         baseURL: API_URL,
         headers: {
           Authorization: `Bearer ${s.session.accessToken}`,
@@ -157,12 +215,12 @@ export function updateTaskList(newTaskList: Partial<TaskList>) {
   });
 }
 
-export function createTaskList(newTaskList: Partial<TaskList>) {
+export function deleteTaskList(taskListId: string) {
   return refreshToken().then(() => {
     const s = sessionStorage.load();
 
     return axios
-      .post("/api/task-lists", newTaskList, {
+      .delete(`/api/task-lists/${taskListId}`, {
         baseURL: API_URL,
         headers: {
           Authorization: `Bearer ${s.session.accessToken}`,
