@@ -2,21 +2,22 @@ import { useState, useEffect, useSyncExternalStore } from "react";
 
 import { setSessionStorage } from "../../sdk/session";
 import {
-  getApp,
-  getTaskLists,
+  init,
   insertTaskList,
+  updateTaskList,
+  deleteTaskList,
   insertTask,
   updateTask,
   sortTasks,
   clearCompletedTasks,
 } from "../../sdk/actions";
 import { store } from "../../sdk/store";
-import { Task } from "../../sdk/types";
+import { Task, TaskList } from "../../sdk/types";
 
 /* Features
  * [x] タスクリストの追加
- * [ ] タスクリストの削除
- * [ ] タスクリストの更新(タスクリスト名)
+ * [x] タスクリストの削除
+ * [x] タスクリストの更新(タスクリスト名)
  * [ ] タスクリストの移動
  *
  * [x] タスクの並び替え
@@ -59,21 +60,126 @@ function TaskTextInput(props: TaskTextInputProps) {
   );
 }
 
+interface TaskListComponentProps {
+  taskList: TaskList;
+}
+
+function TaskListComponent(props: TaskListComponentProps) {
+  const taskList = props.taskList;
+
+  const [taskListName, setTaskListName] = useState(taskList.name);
+  const [newTaskText, setNewTaskText] = useState("");
+
+  return (
+    <section>
+      <header>
+        <input
+          type="text"
+          value={taskListName}
+          onChange={(e) => {
+            const newName = e.currentTarget.value;
+            setTaskListName(newName);
+          }}
+          onBlur={(e) => {
+            if (taskListName !== taskList.name) {
+              updateTaskList({
+                ...taskList,
+                name: taskListName,
+              });
+            }
+          }}
+        />
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (newTaskText !== "") {
+              insertTask(
+                taskList.id,
+                { text: newTaskText },
+                taskList.tasks.length
+              );
+              setNewTaskText("");
+            }
+          }}
+        >
+          <input
+            type="text"
+            placeholder="New Task"
+            value={newTaskText}
+            onChange={(e) => {
+              setNewTaskText(e.currentTarget.value);
+            }}
+          />
+          <button>Add Task</button>
+        </form>
+        <button
+          onClick={() => {
+            sortTasks(taskList.id);
+          }}
+        >
+          Sort tasks
+        </button>
+        <button
+          onClick={() => {
+            clearCompletedTasks(taskList.id);
+          }}
+        >
+          Clear completed tasks
+        </button>
+      </header>
+      <ul>
+        {taskList.tasks.map((task) => {
+          return (
+            <li key={task.id}>
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={(e) => {
+                  const completed = e.currentTarget.checked;
+                  updateTask(taskList.id, {
+                    ...task,
+                    completed,
+                  });
+                }}
+              />
+              <TaskTextInput
+                task={task}
+                handleBlur={(_, { text }) => {
+                  if (text !== task.text) {
+                    updateTask(taskList.id, {
+                      ...task,
+                      text,
+                    });
+                  }
+                }}
+              />
+              <input
+                type="date"
+                value={task.date}
+                onChange={(e) => {
+                  const date = e.currentTarget.value;
+                  updateTask(taskList.id, {
+                    ...task,
+                    date,
+                  });
+                }}
+              />
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export default function AppPage() {
   const [selectedTaskListId, setSelectedTaskListId] = useState(null);
-  const [newTaskText, setNewTaskText] = useState("");
   const [newTaskListName, setNewTaskListName] = useState("");
 
   useEffect(() => {
-    getApp()
-      .then((res) => {
-        setSelectedTaskListId(res.app.taskListIds[0]);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-    getTaskLists().catch((err) => {
-      console.error(err);
+    init().then((res) => {
+      setSelectedTaskListId(res.app.taskListIds[0]);
     });
   }, []);
 
@@ -126,94 +232,20 @@ export default function AppPage() {
                 }}
               >
                 {tl?.name}({tl?.tasks.length})
+                <button
+                  onClick={() => {
+                    deleteTaskList(tlid);
+                  }}
+                >
+                  Delete
+                </button>
               </li>
             );
           })}
         </ul>
         <div style={{ flex: 1 }}>
-          {selectedTaskListId && taskLists[selectedTaskListId] && (
-            <section>
-              <header>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (newTaskText !== "") {
-                      insertTask(
-                        selectedTaskListId,
-                        { text: newTaskText },
-                        taskList.tasks.length
-                      );
-                      setNewTaskText("");
-                    }
-                  }}
-                >
-                  <input
-                    type="text"
-                    placeholder="New Task"
-                    value={newTaskText}
-                    onChange={(e) => {
-                      setNewTaskText(e.currentTarget.value);
-                    }}
-                  />
-                  <button>Add Task</button>
-                </form>
-                <button
-                  onClick={() => {
-                    sortTasks(selectedTaskListId);
-                  }}
-                >
-                  Sort tasks
-                </button>
-                <button
-                  onClick={() => {
-                    clearCompletedTasks(selectedTaskListId);
-                  }}
-                >
-                  Clear completed tasks
-                </button>
-              </header>
-              <ul>
-                {taskLists[selectedTaskListId].tasks.map((task) => {
-                  return (
-                    <li key={task.id}>
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={(e) => {
-                          const completed = e.currentTarget.checked;
-                          updateTask(selectedTaskListId, {
-                            ...task,
-                            completed,
-                          });
-                        }}
-                      />
-                      <TaskTextInput
-                        task={task}
-                        handleBlur={(_, { text }) => {
-                          if (text !== task.text) {
-                            updateTask(selectedTaskListId, {
-                              ...task,
-                              text,
-                            });
-                          }
-                        }}
-                      />
-                      <input
-                        type="date"
-                        value={task.date}
-                        onChange={(e) => {
-                          const date = e.currentTarget.value;
-                          updateTask(selectedTaskListId, {
-                            ...task,
-                            date,
-                          });
-                        }}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
+          {taskList && (
+            <TaskListComponent key={taskList.id} taskList={taskList} />
           )}
         </div>
       </div>
