@@ -33,6 +33,7 @@ export type App = {
 };
 
 export type Profile = {
+  email: string;
   displayName: string;
 };
 
