@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import * as Y from "yjs";
 import { arrayMove } from "@dnd-kit/sortable";
 
-import { TaskList, Task, App } from "./types";
+import { TaskList, Task, App, Preferences, Profile } from "./types";
 import { store } from "./store";
 import {
   register as registerAsync,
@@ -10,7 +10,9 @@ import {
   getApp as getAppAsync,
   updateApp as updateAppAsync,
   getPreferences as getPreferencesAsync,
+  updatePreferences as updatePreferencesAsync,
   getProfile as getProfileAsync,
+  updateProfile as updateProfileAsync,
   getTaskLists as getTaskListsAsync,
   createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
@@ -31,7 +33,7 @@ import {
  *
  * *Preferences
  * [x] getPreferences
- * [ ] updatePreferences
+ * [x] updatePreferences
  *
  * *Profile
  * [x] getProfile
@@ -42,7 +44,7 @@ import {
  * [x] insertTaskList
  * [x] updateTaskList
  * [x] deleteTaskList
- * [ ] moveTaskList
+ * [x] moveTaskList
  * [x] sortTasks
  * [x] clearCompletedTasks
  * [ ] refreshShareCode
@@ -50,7 +52,7 @@ import {
  * *Task
  * [x] insertTask
  * [x] updateTask
- * [ ] moveTask
+ * [x] moveTask
  */
 
 export function init() {
@@ -107,6 +109,15 @@ export function getPreferences() {
   });
 }
 
+export function updatePreferences(preferences: Partial<Preferences>) {
+  store.data.preferences = {
+    ...store.data.preferences,
+    ...preferences,
+  };
+  store.emit();
+  return [store.data.preferences, updatePreferencesAsync(preferences)]
+}
+
 /* Profile */
 export function getProfile() {
   return getProfileAsync().then((res) => {
@@ -114,6 +125,15 @@ export function getProfile() {
     store.emit();
     return res;
   });
+}
+
+export function updateProfile(profile: Partial<Profile>) {
+  store.data.profile = {
+    ...store.data.profile,
+    ...profile,
+  };
+  store.emit();
+  return [store.data.profile, updateProfileAsync(profile)];
 }
 
 /* TaskList */
@@ -200,6 +220,34 @@ export function deleteTaskList(taskListId: string): [Promise<any>] {
   delete store.docs.taskLists[taskListId];
   store.emit();
   return [Promise.all([deleteTaskListAsync(taskListId), updateAppAsync(app)])];
+}
+
+export function moveTaskList(from: number, to: number): [App, Promise<any>] {
+  const appDoc = store.docs.app;
+  const appMap = appDoc.getMap("app");
+  const taskListIdArray = appMap.get("taskListIds") as Y.Array<string>;
+
+  taskListIdArray.doc.transact(() => {
+    const sortedTaskListIds = arrayMove(taskListIdArray.toJSON(), from, to);
+    for (let i = sortedTaskListIds.length - 1; i >= 0; i--) {
+      for (let j = 0; j < taskListIdArray.length; j++) {
+        if (taskListIdArray.get(j) === sortedTaskListIds[i]) {
+          const t = taskListIdArray.get(j);
+          taskListIdArray.delete(j);
+          taskListIdArray.insert(0, [t]);
+          break;
+        }
+      }
+    }
+  });
+
+  const app = appMap.toJSON() as App;
+  app.update = Y.encodeStateAsUpdate(appDoc);
+
+  store.data.app = app;
+  store.docs.app = appDoc;
+  store.emit();
+  return [app, updateAppAsync(app)];
 }
 
 function sortTasksWithoutEmit(taskListId: string) {
