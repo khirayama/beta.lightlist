@@ -1,7 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Preferences as PreferencesType } from "@prisma/client";
 
-import { createPrismaClient, exclude, auth, corsMiddleware } from "common/apiHelper";
+import {
+  createPrismaClient,
+  exclude,
+  auth,
+  corsMiddleware,
+} from "common/apiHelper";
 
 const prisma = createPrismaClient();
 

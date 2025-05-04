@@ -50,16 +50,11 @@ model App {
   update             Bytes
 }
 
-model Profile {
-  id          Int    @id @default(autoincrement())
-  userId      String @unique @db.Uuid
-  displayName String @default("")
-}
-
 model Preferences {
-  id     Int    @id @default(autoincrement())
-  userId String @unique @db.Uuid
-  lang     Lang    @default(JA)
-  theme    Theme   @default(SYSTEM)
-  autoSort Boolean @default(false)
+  id          Int     @id @default(autoincrement())
+  userId      String  @unique @db.Uuid
+  displayName String  @default("")
+  lang        Lang    @default(JA)
+  theme       Theme   @default(SYSTEM)
+  autoSort    Boolean @default(false)
 }

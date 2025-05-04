@@ -44,29 +44,24 @@ export default async function handler(
     ad.set("taskListIds", new Y.Array());
     ad.set("taskInsertPosition", "TOP");
 
-    const [app, profile, preferences] = await prisma.$transaction([
+    const [app, preferences] = await prisma.$transaction([
       prisma.app.create({
         data: {
           ...ad.toJSON(),
           update: Y.encodeStateAsUpdate(appDoc),
         } as AppType,
       }),
-      prisma.profile.create({
-        data: {
-          userId: user.id,
-          displayName: user.email.split("@")[0],
-        },
-      }),
       prisma.preferences.create({
         data: {
           userId: user.id,
+          displayName: user.email.split("@")[0],
           lang,
           theme: "SYSTEM",
         },
       }),
     ]);
 
-    if (!app || !profile || !preferences) {
+    if (!app || !preferences) {
       return res.status(500).json({ error: "Failed to create user" });
     }
 

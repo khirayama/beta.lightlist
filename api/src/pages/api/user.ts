@@ -28,11 +28,6 @@ export default async function handler(
             userId: user.id,
           },
         }),
-        prisma.profile.deleteMany({
-          where: {
-            userId: user.id,
-          },
-        }),
         prisma.preferences.deleteMany({
           where: {
             userId: user.id,

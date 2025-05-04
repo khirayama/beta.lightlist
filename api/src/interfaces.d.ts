@@ -17,39 +17,15 @@ type TaskList = {
   update: Uint8Array;
 };
 
-type Auth = {
-  session: Session;
-};
-
 type App = {
   taskInsertPosition: "BOTTOM" | "TOP";
   taskListIds: string[];
   update: Uint8Array;
 };
 
-type Profile = {
-  displayName: string;
-};
-
 type Preferences = {
+  displayName: string;
   lang: "EN" | "JA";
   theme: "SYSTEM" | "LIGHT" | "DARK";
   autoSort: boolean;
-};
-
-type GlobalState = {
-  auth: Auth;
-  app: App;
-  profile: Profile;
-  preferences: Preferences;
-  taskLists: {
-    [id: string]: TaskList;
-  };
-  isInitialized: {
-    auth: boolean;
-    app: boolean;
-    profile: boolean;
-    preferences: boolean;
-    taskLists: boolean;
-  };
 };
