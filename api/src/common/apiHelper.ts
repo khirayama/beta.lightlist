@@ -17,7 +17,7 @@ function runMiddleware(req: any, res: any, fn: Function) {
 
 const cors = Cors({
   origin: 'http://localhost:3001',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 });
 
@@ -67,12 +67,14 @@ export async function auth(req: NextApiRequest) {
   if (err) {
     return {
       user: null,
+      accessToken,
       errorMessage: err.message,
     };
   }
 
   return {
     user,
+    accessToken,
     errorMessage: "",
   };
 }
