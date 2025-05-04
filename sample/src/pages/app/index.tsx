@@ -1,4 +1,4 @@
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore, MouseEvent } from "react";
 import {
   DndContext,
   closestCenter,
@@ -28,6 +28,7 @@ import {
   sortTasks,
   moveTask,
   clearCompletedTasks,
+  moveTaskList,
 } from "../../sdk/actions";
 import { store } from "../../sdk/store";
 import { Task, TaskList } from "../../sdk/types";
@@ -36,7 +37,7 @@ import { Task, TaskList } from "../../sdk/types";
  * [x] タスクリストの追加
  * [x] タスクリストの削除
  * [x] タスクリストの更新(タスクリスト名)
- * [ ] タスクリストの移動
+ * [x] タスクリストの移動
  *
  * [x] タスクの並び替え
  * [x] タスクの自動並び替え
@@ -204,7 +205,7 @@ function TaskListItemComponent(props: TaskListItemComponentProps) {
     setActivatorNodeRef,
     transform,
     transition,
-    isDragging,
+    // isDragging,
   } = useSortable({ id: task.id });
 
   const style = {
@@ -215,7 +216,7 @@ function TaskListItemComponent(props: TaskListItemComponentProps) {
   return (
     <div ref={setNodeRef} style={style}>
       <span ref={setActivatorNodeRef} {...listeners} {...attributes}>
-        handle
+        H
       </span>
       <input
         type="checkbox"
@@ -254,6 +255,46 @@ function TaskListItemComponent(props: TaskListItemComponentProps) {
   );
 }
 
+interface TaskListListItemComponentProps {
+  taskList: TaskList;
+  onClick: (e?: MouseEvent<HTMLDivElement>) => void;
+}
+
+function TaskListListItemComponent(props: TaskListListItemComponentProps) {
+  const taskList = props.taskList;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    // isDragging,
+  } = useSortable({ id: taskList.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} onClick={props.onClick}>
+      <span ref={setActivatorNodeRef} {...listeners} {...attributes}>
+        H
+      </span>
+      {taskList?.name}({taskList?.tasks.length})
+      <button
+        onClick={() => {
+          deleteTaskList(taskList.id);
+        }}
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
 export default function AppPage() {
   const [selectedTaskListId, setSelectedTaskListId] = useState(null);
   const [newTaskListName, setNewTaskListName] = useState("");
@@ -274,10 +315,27 @@ export default function AppPage() {
   const taskLists = state.taskLists;
   const taskList = taskLists[selectedTaskListId];
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+
+    if (active && over && active.id !== over.id) {
+      const from = app.taskListIds.findIndex((tlid) => tlid === active.id);
+      const to = app.taskListIds.findIndex((tlid) => tlid === over.id);
+      moveTaskList(from, to);
+    }
+  };
+
   return (
     <div>
       <div>
-        <a href="/settings">Settings</a>
+        <a href="/app/settings">Settings</a>
       </div>
       <div style={{ display: "flex" }}>
         <ul>
@@ -303,26 +361,31 @@ export default function AppPage() {
             />
             <button>Add Task List</button>
           </form>
-          {app?.taskListIds.map((tlid) => {
-            const tl = taskLists[tlid];
-            return (
-              <li
-                key={tlid}
-                onClick={() => {
-                  setSelectedTaskListId(tlid);
-                }}
-              >
-                {tl?.name}({tl?.tasks.length})
-                <button
-                  onClick={() => {
-                    deleteTaskList(tlid);
-                  }}
-                >
-                  Delete
-                </button>
-              </li>
-            );
-          })}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={app.taskListIds.map((tlid) => taskLists[tlid])}
+              strategy={verticalListSortingStrategy}
+            >
+              {app?.taskListIds.map((tlid) => {
+                return (
+                  taskLists[tlid] && (
+                    <TaskListListItemComponent
+                      key={tlid}
+                      taskList={taskLists[tlid]}
+                      onClick={() => {
+                        setSelectedTaskListId(tlid);
+                      }}
+                    />
+                  )
+                );
+              })}
+            </SortableContext>
+          </DndContext>
         </ul>
         <div style={{ flex: 1 }}>
           {taskList && (
