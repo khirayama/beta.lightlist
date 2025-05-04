@@ -19,6 +19,7 @@ export const store: {
       update: new Uint8Array(),
     },
     profile: {
+      email: "",
       displayName: "",
     },
     preferences: {
