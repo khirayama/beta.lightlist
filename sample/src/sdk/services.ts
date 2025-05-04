@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { App, TaskList } from "./types";
+import { App, TaskList, Profile, Preferences } from "./types";
 import { sessionStorage } from "./session";
 
 const API_URL = "http://localhost:3000";
@@ -9,6 +9,8 @@ const refreshToken = (() => {
   let isRefreshing = null;
 
   return () => {
+    console.warn("Checking token", isRefreshing);
+
     if (isRefreshing) {
       return isRefreshing;
     }
@@ -135,12 +137,52 @@ export function getPreferences() {
   });
 }
 
+export function updatePreferences(newPreferences: Partial<Preferences>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .patch("/api/preferences", newPreferences, {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
 export function getProfile() {
   return refreshToken().then(() => {
     const s = sessionStorage.load();
 
     return axios
       .get("/api/profile", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function updateProfile(newProfile: Partial<Profile>) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .patch("/api/profile", newProfile, {
         baseURL: API_URL,
         headers: {
           Authorization: `Bearer ${s.session.accessToken}`,
