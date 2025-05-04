@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import type { TaskList as TaskListType } from "@prisma/client";
 import * as Y from "yjs";
 
-import { createPrismaClient, exclude, auth } from "common/apiHelper";
+import { createPrismaClient, exclude, auth, corsMiddleware } from "common/apiHelper";
 
 const prisma = createPrismaClient();
 
@@ -10,6 +10,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  await corsMiddleware(req, res);
+
   const taskListId = req.query.id as string;
   const unsafeKeys: (keyof TaskListType)[] = ["id"];
   const shareCode = req.body?.shareCode;

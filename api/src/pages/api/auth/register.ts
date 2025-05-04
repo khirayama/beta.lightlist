@@ -41,7 +41,6 @@ export default async function handler(
     const { user, session } = data;
     const appDoc = new Y.Doc();
     const ad = appDoc.getMap("app");
-    ad.set("userId", user.id);
     ad.set("taskListIds", new Y.Array());
     ad.set("taskInsertPosition", "TOP");
 

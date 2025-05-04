@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Preferences as PreferencesType } from "@prisma/client";
 
-import { createPrismaClient, exclude, auth } from "common/apiHelper";
+import { createPrismaClient, exclude, auth, corsMiddleware } from "common/apiHelper";
 
 const prisma = createPrismaClient();
 
@@ -9,6 +9,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  await corsMiddleware(req, res);
+
   const { user, errorMessage } = await auth(req);
   if (errorMessage) {
     return res.status(401).json({ error: errorMessage });
