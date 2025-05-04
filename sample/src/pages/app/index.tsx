@@ -1,4 +1,21 @@
 import { useState, useEffect, useSyncExternalStore } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSS } from "@dnd-kit/utilities";
 
 import { setSessionStorage } from "../../sdk/session";
 import {
@@ -9,6 +26,7 @@ import {
   insertTask,
   updateTask,
   sortTasks,
+  moveTask,
   clearCompletedTasks,
 } from "../../sdk/actions";
 import { store } from "../../sdk/store";
@@ -23,7 +41,7 @@ import { Task, TaskList } from "../../sdk/types";
  * [x] タスクの並び替え
  * [x] タスクの自動並び替え
  * [x] タスクの削除
- * [ ] タスクの移動
+ * [x] タスクの移動
  *
  * [x] タスクの追加
  * [x] タスクの更新(完了、テキスト、日付)
@@ -69,6 +87,23 @@ function TaskListComponent(props: TaskListComponentProps) {
 
   const [taskListName, setTaskListName] = useState(taskList.name);
   const [newTaskText, setNewTaskText] = useState("");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+
+    if (active && over && active.id !== over.id) {
+      const from = taskList.tasks.findIndex((t) => t.id === active.id);
+      const to = taskList.tasks.findIndex((t) => t.id === over.id);
+      moveTask(taskList.id, from, to);
+    }
+  };
 
   return (
     <section>
@@ -128,48 +163,94 @@ function TaskListComponent(props: TaskListComponentProps) {
           Clear completed tasks
         </button>
       </header>
-      <ul>
-        {taskList.tasks.map((task) => {
-          return (
-            <li key={task.id}>
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={(e) => {
-                  const completed = e.currentTarget.checked;
-                  updateTask(taskList.id, {
-                    ...task,
-                    completed,
-                  });
-                }}
-              />
-              <TaskTextInput
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={taskList.tasks}
+          strategy={verticalListSortingStrategy}
+        >
+          {taskList.tasks.map((task) => {
+            return (
+              <TaskListItemComponent
+                key={task.id}
+                taskList={taskList}
                 task={task}
-                handleBlur={(_, { text }) => {
-                  if (text !== task.text) {
-                    updateTask(taskList.id, {
-                      ...task,
-                      text,
-                    });
-                  }
-                }}
               />
-              <input
-                type="date"
-                value={task.date}
-                onChange={(e) => {
-                  const date = e.currentTarget.value;
-                  updateTask(taskList.id, {
-                    ...task,
-                    date,
-                  });
-                }}
-              />
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </SortableContext>
+      </DndContext>
     </section>
+  );
+}
+
+interface TaskListItemComponentProps {
+  taskList: TaskList;
+  task: Task;
+}
+
+function TaskListItemComponent(props: TaskListItemComponentProps) {
+  const taskList = props.taskList;
+  const task = props.task;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <span ref={setActivatorNodeRef} {...listeners} {...attributes}>
+        handle
+      </span>
+      <input
+        type="checkbox"
+        checked={task.completed}
+        onChange={(e) => {
+          const completed = e.currentTarget.checked;
+          updateTask(taskList.id, {
+            ...task,
+            completed,
+          });
+        }}
+      />
+      <TaskTextInput
+        task={task}
+        handleBlur={(_, { text }) => {
+          if (text !== task.text) {
+            updateTask(taskList.id, {
+              ...task,
+              text,
+            });
+          }
+        }}
+      />
+      <input
+        type="date"
+        value={task.date}
+        onChange={(e) => {
+          const date = e.currentTarget.value;
+          updateTask(taskList.id, {
+            ...task,
+            date,
+          });
+        }}
+      />
+    </div>
   );
 }
 

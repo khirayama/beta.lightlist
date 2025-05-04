@@ -1,5 +1,6 @@
 import { v4 as uuid } from "uuid";
 import * as Y from "yjs";
+import { arrayMove } from "@dnd-kit/sortable";
 
 import { TaskList, Task, App } from "./types";
 import { store } from "./store";
@@ -59,7 +60,6 @@ export function init() {
     getProfile(),
     getTaskLists(),
   ]).then((res) => {
-    console.log(res);
     return {
       app: res[0].app,
       preferences: res[1].preferences,
@@ -183,9 +183,7 @@ export function updateTaskList(
   return [tl, updateTaskListAsync(tl)];
 }
 
-export function deleteTaskList(
-  taskListId: string
-): [Promise<any>] {
+export function deleteTaskList(taskListId: string): [Promise<any>] {
   const appDoc = store.docs.app;
   const appMap = appDoc.getMap("app");
   const taskListIdArray = appMap.get("taskListIds") as Y.Array<string>;
@@ -329,6 +327,39 @@ export function updateTask(
   taskMap.set("text", newTask.text);
   taskMap.set("completed", newTask.completed);
   taskMap.set("date", newTask.date);
+
+  if (store.data.preferences.autoSort) {
+    sortTasksWithoutEmit(taskListId);
+  }
+
+  const tl = taskListMap.toJSON() as TaskList;
+  tl.update = Y.encodeStateAsUpdate(doc);
+
+  store.data.taskLists[tl.id] = tl;
+  store.docs.taskLists[tl.id] = doc;
+  store.emit();
+  return [tl, updateTaskListAsync(tl)];
+}
+
+export function moveTask(taskListId: string, from: number, to: number) {
+  const doc = store.docs.taskLists[taskListId];
+  const taskListMap = doc.getMap(taskListId);
+  const taskArray = taskListMap.get("tasks") as Y.Array<Y.Map</* FIXME */ any>>;
+
+  taskArray.doc.transact(() => {
+    const sortedTasks = arrayMove(taskArray.toJSON(), from, to);
+    for (let i = sortedTasks.length - 1; i >= 0; i--) {
+      for (let j = 0; j < taskArray.length; j++) {
+        const task = taskArray.get(j);
+        if (task.get("id") === sortedTasks[i].id) {
+          const t = task.clone();
+          taskArray.delete(j);
+          taskArray.insert(0, [t]);
+          break;
+        }
+      }
+    }
+  });
 
   if (store.data.preferences.autoSort) {
     sortTasksWithoutEmit(taskListId);
