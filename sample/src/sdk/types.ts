@@ -32,12 +32,8 @@ export type App = {
   update: Uint8Array;
 };
 
-export type Profile = {
-  email: string;
-  displayName: string;
-};
-
 export type Preferences = {
+  displayName: string;
   lang: "EN" | "JA";
   theme: "SYSTEM" | "LIGHT" | "DARK";
   autoSort: boolean;
@@ -45,7 +41,6 @@ export type Preferences = {
 
 export type Store = {
   app: App;
-  profile: Profile;
   preferences: Preferences;
   taskLists: {
     [key: string]: TaskList;
