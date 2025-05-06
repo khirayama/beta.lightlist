@@ -1,6 +1,9 @@
 import { useState } from "react";
 
 import { register } from "../sdk/actions";
+import { setSessionStorage } from "../sdk/session";
+
+setSessionStorage("web");
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("user@example.com");
