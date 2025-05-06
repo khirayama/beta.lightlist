@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import * as Y from "yjs";
 import { arrayMove } from "@dnd-kit/sortable";
 
-import { TaskList, Task, App, Preferences, Profile } from "./types";
+import { TaskList, Task, App, Preferences } from "./types";
 import { store } from "./store";
 import {
   register as registerAsync,
@@ -11,8 +11,6 @@ import {
   updateApp as updateAppAsync,
   getPreferences as getPreferencesAsync,
   updatePreferences as updatePreferencesAsync,
-  getProfile as getProfileAsync,
-  updateProfile as updateProfileAsync,
   getTaskLists as getTaskListsAsync,
   createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
@@ -35,10 +33,6 @@ import {
  * [x] getPreferences
  * [x] updatePreferences
  *
- * *Profile
- * [x] getProfile
- * [ ] updateProfile
- *
  * *TaskList
  * [x] getTaskLists
  * [x] insertTaskList
@@ -56,19 +50,15 @@ import {
  */
 
 export function init() {
-  return Promise.all([
-    getApp(),
-    getPreferences(),
-    getProfile(),
-    getTaskLists(),
-  ]).then((res) => {
-    return {
-      app: res[0].app,
-      preferences: res[1].preferences,
-      profile: res[2].profile,
-      taskLists: res[3].taskLists,
-    };
-  });
+  return Promise.all([getApp(), getPreferences(), getTaskLists()]).then(
+    (res) => {
+      return {
+        app: res[0].app,
+        preferences: res[1].preferences,
+        taskLists: res[2].taskLists,
+      };
+    }
+  );
 }
 
 /* Auth */
@@ -115,25 +105,7 @@ export function updatePreferences(preferences: Partial<Preferences>) {
     ...preferences,
   };
   store.emit();
-  return [store.data.preferences, updatePreferencesAsync(preferences)]
-}
-
-/* Profile */
-export function getProfile() {
-  return getProfileAsync().then((res) => {
-    store.data.profile = res.profile;
-    store.emit();
-    return res;
-  });
-}
-
-export function updateProfile(profile: Partial<Profile>) {
-  store.data.profile = {
-    ...store.data.profile,
-    ...profile,
-  };
-  store.emit();
-  return [store.data.profile, updateProfileAsync(profile)];
+  return [store.data.preferences, updatePreferencesAsync(preferences)];
 }
 
 /* TaskList */

@@ -18,11 +18,8 @@ export const store: {
       taskListIds: [],
       update: new Uint8Array(),
     },
-    profile: {
-      email: "",
-      displayName: "",
-    },
     preferences: {
+      displayName: "",
       lang: "JA",
       theme: "SYSTEM",
       autoSort: false,
