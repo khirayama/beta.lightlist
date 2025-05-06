@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { App as AppType, TaskList as TaskListType } from "@prisma/client";
+import type {
+  App as AppType,
+  Preferences as PreferencesType,
+  TaskList as TaskListType,
+} from "@prisma/client";
 import * as Y from "yjs";
 import { v4 as uuid } from "uuid";
 
@@ -10,8 +14,8 @@ const prisma = createPrismaClient();
 const supabase = createSupabaseClient();
 
 const firstTaskListName = {
-  "JA": "📋 個人",
-  "EN": "PERSONAL",
+  JA: "📋 個人",
+  EN: "PERSONAL",
 };
 
 export default async function handler(
@@ -40,26 +44,33 @@ export default async function handler(
 
     const { user, session } = data;
     const appDoc = new Y.Doc();
-    const ad = appDoc.getMap("app");
-    ad.set("taskListIds", new Y.Array());
-    ad.set("taskInsertPosition", "TOP");
+    const appMap = appDoc.getMap("app");
+    appMap.set("taskListIds", new Y.Array());
+    appMap.set("taskInsertPosition", "TOP");
 
-    const [app, preferences] = await prisma.$transaction([
-      prisma.app.create({
-        data: {
-          ...ad.toJSON(),
-          update: Y.encodeStateAsUpdate(appDoc),
-        } as AppType,
-      }),
-      prisma.preferences.create({
-        data: {
-          userId: user.id,
-          displayName: user.email.split("@")[0],
-          lang,
-          theme: "SYSTEM",
-        },
-      }),
-    ]);
+    let app: AppType | null = null;
+    let preferences: PreferencesType | null = null;
+    try {
+      [app, preferences] = await prisma.$transaction([
+        prisma.app.create({
+          data: {
+            userId: user.id,
+            ...appMap.toJSON(),
+            update: Y.encodeStateAsUpdate(appDoc),
+          } as AppType,
+        }),
+        prisma.preferences.create({
+          data: {
+            userId: user.id,
+            displayName: user.email.split("@")[0],
+            lang,
+            theme: "SYSTEM",
+          },
+        }),
+      ]);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
 
     if (!app || !preferences) {
       return res.status(500).json({ error: "Failed to create user" });
@@ -87,12 +98,12 @@ export default async function handler(
       }),
     ]);
 
-    const taskListIds = ad.get("taskListIds") as Y.Array<string>;
+    const taskListIds = appMap.get("taskListIds") as Y.Array<string>;
     taskListIds.insert(0, [taskList.id]);
     await prisma.app.update({
       where: { userId: user.id },
       data: {
-        ...ad.toJSON(),
+        ...appMap.toJSON(),
         update: Y.encodeStateAsUpdate(appDoc),
       },
     });
