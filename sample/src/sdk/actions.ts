@@ -15,7 +15,10 @@ import {
   createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
   deleteTaskList as deleteTaskListAsync,
+  updateEmail as updateEmailAsync,
+  updatePassword as updatePasswordAsync,
 } from "./services";
+export { loadSession } from "./services";
 
 /*
  * [x] init
@@ -23,7 +26,8 @@ import {
  * *Auth
  * [x] register
  * [x] login
- * [ ] updateEmail
+ * [x] updateEmail
+ * [ ] updatePassword
  *
  * *App
  * [x] getApp
@@ -74,6 +78,17 @@ export function login(credentials: {
   password: string;
 }): Promise<any> {
   return loginAsync(credentials);
+}
+
+export function updateEmail(credentials: { email: string }): Promise<any> {
+  return updateEmailAsync(credentials);
+}
+
+export function updatePassword(credentials: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<any> {
+  return updatePasswordAsync(credentials);
 }
 
 /* App */

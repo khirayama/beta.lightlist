@@ -77,6 +77,57 @@ export function login(credentials: { email: string; password: string }) {
     });
 }
 
+export function loadSession() {
+  return sessionStorage.load();
+}
+
+export function updateEmail(credentials: { email: string }) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .put("/api/auth/email", credentials, {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        const s = sessionStorage.load();
+        sessionStorage.save({ ...s, ...res.data });
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function updatePassword(credentials: {
+  currentPassword: string;
+  newPassword: string;
+}) {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+
+    return axios
+      .put("/api/auth/password", credentials, {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        const s = sessionStorage.load();
+        sessionStorage.save({ ...s, ...res.data });
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
 export function getApp() {
   return refreshToken().then(() => {
     const s = sessionStorage.load();
