@@ -1,17 +1,23 @@
 import { useState, useEffect, useSyncExternalStore, FormEvent } from "react";
 
-import { init } from "../../sdk/actions";
 import { store } from "../../sdk/store";
 import { setSessionStorage } from "../../sdk/session";
-import { updatePreferences, updateProfile } from "../../sdk/actions";
+import {
+  init,
+  updatePreferences,
+  updateEmail,
+  updatePassword,
+  loadSession,
+} from "../../sdk/actions";
+import { Preferences } from "../../sdk/types";
 
 /* Features
  * [x] DisplayNameの更新
- * [ ] Emailの更新
- * [ ] Passwordの更新
- * [ ] Themeの変更
- * [ ] Languageの変更
- * [ ] AutoSortの変更
+ * [x] Themeの変更
+ * [x] Languageの変更
+ * [x] AutoSortの変更
+ * [x] Emailの更新
+ * [x] Passwordの更新
  * [ ] Logoutの実装
  * [ ] DeleteAccountの実装
  */
@@ -26,27 +32,29 @@ export default function SettingsPage() {
   );
 
   const [displayName, setDisplayName] = useState<string>(
-    state.profile.displayName
+    state.preferences.displayName || ""
   );
-  const [email, setEmail] = useState<string>(state.profile.email);
-  const [password, setPassword] = useState<string>("");
-  const [passwordConfirm, setPasswordConfirm] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [oldPassword, setOldPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState<string>("");
 
   useEffect(() => {
+    setEmail(loadSession().user.email);
     init().then((res) => {
-      setDisplayName(res.profile.displayName);
-      setEmail(res.profile.email);
+      setDisplayName(res.preferences.displayName);
     });
   }, []);
 
   return (
     <div>
+      <a href="/app">App</a>
       <h1>Settings</h1>
       <section>
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            updateProfile({ displayName });
+            updatePreferences({ displayName });
           }}
         >
           <h2>Display Name</h2>
@@ -65,7 +73,7 @@ export default function SettingsPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            console.log(email);
+            updateEmail({ email });
           }}
         >
           <h2>Email</h2>
@@ -84,34 +92,49 @@ export default function SettingsPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (password !== passwordConfirm) {
+            if (newPassword !== newPasswordConfirm) {
               alert("Password and password confirmation do not match");
               return;
             }
-            console.log(password);
+            if (newPassword === oldPassword) {
+              alert("No change");
+              return;
+            }
+            updatePassword({ currentPassword: oldPassword, newPassword });
           }}
         >
           <h2>Password</h2>
+          <h3>Old Password</h3>
           <input
             type="password"
-            value={password}
+            value={oldPassword}
             onChange={(e: FormEvent<HTMLInputElement>) => {
               const target = e.target as HTMLInputElement;
               const password = target.value;
-              setPassword(password);
+              setOldPassword(password);
             }}
           />
-          <h2>Password Confirmation</h2>
+          <h3>New Password</h3>
           <input
             type="password"
-            value={passwordConfirm}
+            value={newPassword}
             onChange={(e: FormEvent<HTMLInputElement>) => {
               const target = e.target as HTMLInputElement;
-              const passwordConfirm = target.value;
-              setPasswordConfirm(passwordConfirm);
+              const password = target.value;
+              setNewPassword(password);
             }}
           />
-          <p>{password !== passwordConfirm && "Does not match"}</p>
+          <h3>Confirm new password</h3>
+          <input
+            type="password"
+            value={newPasswordConfirm}
+            onChange={(e: FormEvent<HTMLInputElement>) => {
+              const target = e.target as HTMLInputElement;
+              const newPasswordConfirm = target.value;
+              setNewPasswordConfirm(newPasswordConfirm);
+            }}
+          />
+          <p>{newPassword !== newPasswordConfirm && "Does not match"}</p>
           <button>Save</button>
         </form>
 
@@ -120,9 +143,9 @@ export default function SettingsPage() {
           <select
             value={state.preferences.theme}
             onChange={(e: FormEvent<HTMLSelectElement>) => {
-              const target = e.target as HTMLSelectElement;
-              const selectedTheme = target.value;
-              console.log(selectedTheme);
+              updatePreferences({
+                theme: e.currentTarget.value as Preferences["theme"],
+              });
             }}
           >
             {["SYSTEM", "LIGHT", "DARK"].map((theme) => {
@@ -140,9 +163,9 @@ export default function SettingsPage() {
           <select
             value={state.preferences.lang}
             onChange={(e: FormEvent<HTMLSelectElement>) => {
-              const target = e.target as HTMLSelectElement;
-              const selectedLang = target.value;
-              console.log(selectedLang);
+              updatePreferences({
+                lang: e.currentTarget.value as Preferences["lang"],
+              });
             }}
           >
             {["JA", "EN"].map((lang) => {
@@ -161,9 +184,9 @@ export default function SettingsPage() {
             type="checkbox"
             checked={state.preferences.autoSort}
             onChange={(e) => {
-              const target = e.target as HTMLInputElement;
-              const isChecked = target.checked;
-              console.log(isChecked);
+              updatePreferences({
+                autoSort: e.currentTarget.checked,
+              });
             }}
           />
         </div>
