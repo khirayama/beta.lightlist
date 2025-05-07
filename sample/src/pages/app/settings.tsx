@@ -190,6 +190,27 @@ export default function SettingsPage() {
             }}
           />
         </div>
+
+        <div>
+          <h2>Insert Posision</h2>
+          <select
+            value={state.preferences.taskInsertPosition}
+            onChange={(e: FormEvent<HTMLSelectElement>) => {
+              updatePreferences({
+                taskInsertPosition: e.currentTarget
+                  .value as Preferences["taskInsertPosition"],
+              });
+            }}
+          >
+            {["TOP", "BOTTOM"].map((pos) => {
+              return (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </section>
     </div>
   );

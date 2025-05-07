@@ -27,17 +27,14 @@ export { loadSession } from "./services";
  * [x] register
  * [x] login
  * [x] updateEmail
- * [ ] updatePassword
- *
- * *App
- * [x] getApp
- * [ ] updateApp
+ * [x] updatePassword
  *
  * *Preferences
  * [x] getPreferences
  * [x] updatePreferences
  *
  * *TaskList
+ * [x] getApp
  * [x] getTaskLists
  * [x] insertTaskList
  * [x] updateTaskList
@@ -91,20 +88,6 @@ export function updatePassword(credentials: {
   return updatePasswordAsync(credentials);
 }
 
-/* App */
-export function getApp() {
-  return getAppAsync().then((res) => {
-    store.docs.app = new Y.Doc();
-    Y.applyUpdate(
-      store.docs.app,
-      Uint8Array.from(Object.values(res.app.update))
-    );
-    store.data.app = store.docs.app.getMap("app").toJSON() as App;
-    store.emit();
-    return res;
-  });
-}
-
 /* Preferences */
 export function getPreferences() {
   return getPreferencesAsync().then((res) => {
@@ -124,6 +107,19 @@ export function updatePreferences(preferences: Partial<Preferences>) {
 }
 
 /* TaskList */
+export function getApp() {
+  return getAppAsync().then((res) => {
+    store.docs.app = new Y.Doc();
+    Y.applyUpdate(
+      store.docs.app,
+      Uint8Array.from(Object.values(res.app.update))
+    );
+    store.data.app = store.docs.app.getMap("app").toJSON() as App;
+    store.emit();
+    return res;
+  });
+}
+
 export function getTaskLists() {
   return getTaskListsAsync().then((res) => {
     for (const tl of res.taskLists) {

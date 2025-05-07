@@ -46,7 +46,6 @@ export default async function handler(
     const appDoc = new Y.Doc();
     const appMap = appDoc.getMap("app");
     appMap.set("taskListIds", new Y.Array());
-    appMap.set("taskInsertPosition", "TOP");
 
     let app: AppType | null = null;
     let preferences: PreferencesType | null = null;
@@ -65,6 +64,7 @@ export default async function handler(
             displayName: user.email.split("@")[0],
             lang,
             theme: "SYSTEM",
+            taskInsertPosition: "TOP",
           },
         }),
       ]);

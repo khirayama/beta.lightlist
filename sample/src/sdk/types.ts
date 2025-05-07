@@ -27,7 +27,6 @@ export type TaskList = {
 };
 
 export type App = {
-  taskInsertPosition: "BOTTOM" | "TOP";
   taskListIds: string[];
   update: Uint8Array;
 };
@@ -37,6 +36,7 @@ export type Preferences = {
   lang: "EN" | "JA";
   theme: "SYSTEM" | "LIGHT" | "DARK";
   autoSort: boolean;
+  taskInsertPosition: "BOTTOM" | "TOP";
 };
 
 export type Store = {

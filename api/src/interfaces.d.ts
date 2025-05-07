@@ -18,7 +18,6 @@ type TaskList = {
 };
 
 type App = {
-  taskInsertPosition: "BOTTOM" | "TOP";
   taskListIds: string[];
   update: Uint8Array;
 };
@@ -28,4 +27,5 @@ type Preferences = {
   lang: "EN" | "JA";
   theme: "SYSTEM" | "LIGHT" | "DARK";
   autoSort: boolean;
+  taskInsertPosition: "BOTTOM" | "TOP";
 };

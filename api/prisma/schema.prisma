@@ -43,18 +43,18 @@ model TaskList {
 }
 
 model App {
-  id                 Int                @id @default(autoincrement())
-  userId             String             @unique @db.Uuid
-  taskInsertPosition TaskInsertPosition @default(BOTTOM)
-  taskListIds        String[]           @default([])
-  update             Bytes
+  id          Int      @id @default(autoincrement())
+  userId      String   @unique @db.Uuid
+  taskListIds String[] @default([])
+  update      Bytes
 }
 
 model Preferences {
-  id          Int     @id @default(autoincrement())
-  userId      String  @unique @db.Uuid
-  displayName String  @default("")
-  lang        Lang    @default(JA)
-  theme       Theme   @default(SYSTEM)
-  autoSort    Boolean @default(false)
+  id                 Int                @id @default(autoincrement())
+  userId             String             @unique @db.Uuid
+  displayName        String             @default("")
+  lang               Lang               @default(JA)
+  theme              Theme              @default(SYSTEM)
+  autoSort           Boolean            @default(false)
+  taskInsertPosition TaskInsertPosition @default(BOTTOM)
 }

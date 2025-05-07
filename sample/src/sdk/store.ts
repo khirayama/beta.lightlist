@@ -14,7 +14,6 @@ export const store: {
 } = {
   data: {
     app: {
-      taskInsertPosition: "BOTTOM",
       taskListIds: [],
       update: new Uint8Array(),
     },
@@ -23,6 +22,7 @@ export const store: {
       lang: "JA",
       theme: "SYSTEM",
       autoSort: false,
+      taskInsertPosition: "BOTTOM",
     },
     taskLists: {},
   },
