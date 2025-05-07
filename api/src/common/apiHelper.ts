@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
-import Cors from 'cors';
+import Cors from "cors";
 
 import { createSupabaseClient } from "common/supabase";
 
@@ -16,16 +16,17 @@ function runMiddleware(req: any, res: any, fn: Function) {
 }
 
 const cors = Cors({
-  origin: 'http://localhost:3001',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  origin: "http://localhost:3001",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 });
 
-export async function corsMiddleware(req: NextApiRequest, res: NextApiResponse) {
+export async function corsMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   await runMiddleware(req, res, cors);
 }
-
-const supabase = createSupabaseClient();
 
 export function createPrismaClient() {
   if (process.env.NODE_ENV !== "production") {
@@ -49,6 +50,7 @@ export function exclude<T, Key extends keyof T>(
 }
 
 export async function auth(req: NextApiRequest) {
+  const supabase = createSupabaseClient();
   const authorization = req.headers["authorization"];
 
   if (!authorization) {

@@ -3,19 +3,22 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { corsMiddleware } from "common/apiHelper";
 import { createSupabaseClient } from "common/supabase";
 
-const supabase = createSupabaseClient();
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await corsMiddleware(req, res);
 
+  const supabase = createSupabaseClient();
+
   if (req.method === "POST") {
     const email = req.body.email;
     const password = req.body.password;
 
-    const { data: { session, user }, error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { session, user },
+      error,
+    } = await supabase.auth.signInWithPassword({
       email,
       password,
     });

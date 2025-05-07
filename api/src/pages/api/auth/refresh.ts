@@ -16,19 +16,23 @@ export default async function handler(
     let user = null;
     let error = null;
     try {
-      const r = await axios.post('/auth/v1/token?grant_type=refresh_token', {
-        refresh_token: refreshToken,
-      }, {
-        baseURL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      const r = await axios.post(
+        "/auth/v1/token?grant_type=refresh_token",
+        {
+          refresh_token: refreshToken,
         },
-      });
+        {
+          baseURL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          headers: {
+            "Content-Type": "application/json",
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          },
+        },
+      );
       session = r.data;
       user = session.user;
     } catch (err) {
-      console.log(err);
+      console.log(err.toJSON());
       error = err;
     }
 
@@ -49,4 +53,4 @@ export default async function handler(
       },
     });
   }
-};
+}
