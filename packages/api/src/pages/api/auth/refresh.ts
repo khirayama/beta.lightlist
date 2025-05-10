@@ -32,12 +32,11 @@ export default async function handler(
       session = r.data;
       user = session.user;
     } catch (err) {
-      console.log(err.toJSON());
       error = err;
     }
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.response?.data.msg });
     }
 
     return res.status(200).json({

@@ -6,9 +6,6 @@ import {
   createSupabaseAdminClient,
 } from "common/supabase";
 
-const supabase = createSupabaseClient();
-const supabaseAdmin = createSupabaseAdminClient();
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -21,6 +18,9 @@ export default async function handler(
   }
 
   if (req.method === "PUT" || req.method === "PATCH") {
+    const supabase = createSupabaseClient();
+    const supabaseAdmin = createSupabaseAdminClient();
+
     const currentPassword = req.body.currentPassword;
     const newPassword = req.body.newPassword;
 

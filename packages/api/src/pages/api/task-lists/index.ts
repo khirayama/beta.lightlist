@@ -12,9 +12,8 @@ export default async function handler(
 ) {
   await corsMiddleware(req, res);
 
-  const { user, errorMessage } = await auth(req);
-
   if (req.method === "POST") {
+    const { errorMessage } = await auth(req);
     if (errorMessage) {
       return res.status(401).json({ error: errorMessage });
     }
@@ -36,6 +35,7 @@ export default async function handler(
       prisma.shareCode.create({
         data: {
           taskListId: newTaskList.id,
+          code: newTaskList.shareCode,
         },
       }),
     ]);
@@ -69,6 +69,7 @@ export default async function handler(
         },
       });
     } else {
+      const { user, errorMessage } = await auth(req);
       if (errorMessage) {
         return res.status(401).json({ error: errorMessage });
       }
