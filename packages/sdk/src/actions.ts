@@ -1,6 +1,5 @@
 import { v4 as uuid } from "uuid";
 import * as Y from "yjs";
-import { arrayMove } from "@dnd-kit/sortable";
 
 import { TaskList, Task, App, Preferences } from "./types";
 import { store } from "./store";
@@ -64,6 +63,12 @@ export {
  * [x] updateTask
  * [x] moveTask
  */
+
+function arrayMove<T>(array: T[], from: number, to: number): T[] {
+  const newArray = array.slice();
+  newArray.splice(to, 0, array.splice(from, 1)[0]);
+  return newArray;
+}
 
 export function init() {
   return Promise.all([getApp(), getPreferences(), getTaskLists()]).then(

@@ -1,0 +1,36 @@
+{
+  "name": "sdk",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./funcA": {
+      "import": "./dist/funcA.js",
+      "types": "./dist/funcA.d.ts"
+    },
+    "./funcB": {
+      "import": "./dist/funcB.js",
+      "types": "./dist/funcB.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "1.9.0",
+    "uuid": "11.1.0",
+    "yjs": "13.6.26"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.17",
+    "typescript": "5.8.3"
+  }
+}

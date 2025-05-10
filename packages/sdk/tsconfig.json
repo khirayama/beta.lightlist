@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext", 
+    "esModuleInterop": true,
+    "target": "ES2017"
+  },
+  "include": ["src"]
+}
