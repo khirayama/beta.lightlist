@@ -4,17 +4,21 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+    "./actions": {
+      "import": "./dist/actions.js",
+      "types": "./dist/actions.d.ts"
     },
-    "./funcA": {
-      "import": "./dist/funcA.js",
-      "types": "./dist/funcA.d.ts"
+    "./session": {
+      "import": "./dist/session.js",
+      "types": "./dist/session.d.ts"
     },
-    "./funcB": {
-      "import": "./dist/funcB.js",
-      "types": "./dist/funcB.d.ts"
+    "./store": {
+      "import": "./dist/store.js",
+      "types": "./dist/store.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
     }
   },
   "scripts": {
