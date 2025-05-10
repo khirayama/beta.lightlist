@@ -7,6 +7,8 @@ import {
   updatePreferences,
   updateEmail,
   updatePassword,
+  logout,
+  deleteUser,
   loadSession,
 } from "../../sdk/actions";
 import { Preferences } from "../../sdk/types";
@@ -18,8 +20,8 @@ import { Preferences } from "../../sdk/types";
  * [x] AutoSortの変更
  * [x] Emailの更新
  * [x] Passwordの更新
- * [ ] Logoutの実装
- * [ ] DeleteAccountの実装
+ * [x] Logoutの実装
+ * [x] DeleteAccountの実装
  */
 
 setSessionStorage("web");
@@ -210,6 +212,30 @@ export default function SettingsPage() {
               );
             })}
           </select>
+        </div>
+
+        <div>
+          <button
+            onClick={() => {
+              logout().then(() => {
+                window.location.href = "/";
+              });
+            }}
+          >
+            Log Out
+          </button>
+        </div>
+
+        <div>
+          <button
+            onClick={() => {
+              deleteUser().then(() => {
+                window.location.href = "/";
+              });
+            }}
+          >
+            Delete User
+          </button>
         </div>
       </section>
     </div>
