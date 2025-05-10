@@ -77,6 +77,50 @@ export function login(credentials: { email: string; password: string }) {
     });
 }
 
+export function logout() {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+    return axios
+      .post(
+        "/api/auth/logout",
+        {},
+        {
+          baseURL: API_URL,
+          headers: {
+            Authorization: `Bearer ${s.session.accessToken}`,
+          },
+        }
+      )
+      .then((res) => {
+        sessionStorage.save(null);
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
+export function deleteUser() {
+  return refreshToken().then(() => {
+    const s = sessionStorage.load();
+    return axios
+      .delete("/api/auth/user", {
+        baseURL: API_URL,
+        headers: {
+          Authorization: `Bearer ${s.session.accessToken}`,
+        },
+      })
+      .then((res) => {
+        sessionStorage.save(null);
+        return res.data;
+      })
+      .catch((err) => {
+        throw new Error(err.response.data.error);
+      });
+  });
+}
+
 export function loadSession() {
   return sessionStorage.load();
 }
@@ -126,6 +170,42 @@ export function updatePassword(credentials: {
         throw new Error(err.response.data.error);
       });
   });
+}
+
+export function sendPasswordResetRequest(options: {
+  email: string;
+  redirectTo: string;
+}) {
+  return axios
+    .post("/api/auth/reset-password", options, {
+      baseURL: API_URL,
+    })
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      throw new Error(err.response.data.error);
+    });
+}
+
+export function resetPassword(credentials: { password: string }) {
+  const s = sessionStorage.parseHash(window.location.hash);
+
+  return axios
+    .put("/api/auth/reset-password", credentials, {
+      baseURL: API_URL,
+      headers: {
+        Authorization: `Bearer ${s.session.accessToken}`,
+      },
+    })
+    .then((res) => {
+      const s = sessionStorage.load();
+      sessionStorage.save({ ...s, ...res.data });
+      return res.data;
+    })
+    .catch((err) => {
+      throw new Error(err.response.data.error);
+    });
 }
 
 export function getApp() {
@@ -286,4 +366,28 @@ export function deleteTaskList(taskListId: string) {
         throw new Error(err.response.data.error);
       });
   });
+}
+
+export function getTaskListsByShareCodes(shareCodes: string[]) {
+  const s = sessionStorage.load();
+
+  return axios
+    .get("/api/task-lists", {
+      params: {
+        shareCodes,
+      },
+      paramsSerializer: {
+        indexes: null,
+      },
+      baseURL: API_URL,
+      headers: {
+        Authorization: `Bearer ${s.session.accessToken}`,
+      },
+    })
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      throw new Error(err.response.data.error);
+    });
 }
