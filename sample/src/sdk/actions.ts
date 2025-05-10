@@ -5,8 +5,6 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { TaskList, Task, App, Preferences } from "./types";
 import { store } from "./store";
 import {
-  register as registerAsync,
-  login as loginAsync,
   getApp as getAppAsync,
   updateApp as updateAppAsync,
   getPreferences as getPreferencesAsync,
@@ -15,19 +13,34 @@ import {
   createTaskList as createTaskListAsync,
   updateTaskList as updateTaskListAsync,
   deleteTaskList as deleteTaskListAsync,
-  updateEmail as updateEmailAsync,
-  updatePassword as updatePasswordAsync,
+  getTaskListsByShareCodes as getTaskListsByShareCodesAsync,
 } from "./services";
-export { loadSession } from "./services";
+
+export {
+  register,
+  login,
+  loadSession,
+  updateEmail,
+  updatePassword,
+  sendPasswordResetRequest,
+  resetPassword,
+  logout,
+  deleteUser,
+} from "./services";
 
 /*
  * [x] init
  *
- * *Auth
+ * *Auth from ./services
  * [x] register
  * [x] login
+ * [x] loadSession
  * [x] updateEmail
  * [x] updatePassword
+ * [x] sendPasswordResetRequest
+ * [x] resetPassword
+ * [x] logout
+ * [x] deleteUser
  *
  * *Preferences
  * [x] getPreferences
@@ -37,11 +50,13 @@ export { loadSession } from "./services";
  * [x] getApp
  * [x] getTaskLists
  * [x] insertTaskList
+ * [x] addTaskList
  * [x] updateTaskList
  * [x] deleteTaskList
  * [x] moveTaskList
  * [x] sortTasks
  * [x] clearCompletedTasks
+ * [x] getTaskListsByShareCodes
  * [ ] refreshShareCode
  *
  * *Task
@@ -60,32 +75,6 @@ export function init() {
       };
     }
   );
-}
-
-/* Auth */
-export function register(creadentials: {
-  email: string;
-  password: string;
-}): Promise<any> {
-  return registerAsync(creadentials);
-}
-
-export function login(credentials: {
-  email: string;
-  password: string;
-}): Promise<any> {
-  return loginAsync(credentials);
-}
-
-export function updateEmail(credentials: { email: string }): Promise<any> {
-  return updateEmailAsync(credentials);
-}
-
-export function updatePassword(credentials: {
-  currentPassword: string;
-  newPassword: string;
-}): Promise<any> {
-  return updatePasswordAsync(credentials);
 }
 
 /* Preferences */
@@ -109,7 +98,8 @@ export function updatePreferences(preferences: Partial<Preferences>) {
 /* TaskList */
 export function getApp() {
   return getAppAsync().then((res) => {
-    store.docs.app = new Y.Doc();
+    const doc = store.docs.app || new Y.Doc();
+    store.docs.app = doc;
     Y.applyUpdate(
       store.docs.app,
       Uint8Array.from(Object.values(res.app.update))
@@ -123,9 +113,9 @@ export function getApp() {
 export function getTaskLists() {
   return getTaskListsAsync().then((res) => {
     for (const tl of res.taskLists) {
-      const doc = new Y.Doc();
-      Y.applyUpdate(doc, Uint8Array.from(Object.values(tl.update)));
+      const doc = store.docs.taskLists[tl.id] || new Y.Doc();
       store.docs.taskLists[tl.id] = doc;
+      Y.applyUpdate(doc, Uint8Array.from(Object.values(tl.update)));
       const taskList = doc.getMap(tl.id);
       store.data.taskLists[tl.id] = {
         ...taskList.toJSON(),
@@ -133,7 +123,7 @@ export function getTaskLists() {
       } as TaskList;
     }
     store.emit();
-    return res;
+    return { taskLists: store.data.taskLists };
   });
 }
 
@@ -153,11 +143,12 @@ export function insertTaskList(
 
   const appDoc = store.docs.app;
   const appMap = appDoc.getMap("app");
-  const taskListIds = appMap.get("taskListIds") as Y.Array<string>;
-  taskListIds.insert(index, [id]);
+  const taskListIdArray = appMap.get("taskListIds") as Y.Array<string>;
+  taskListIdArray.insert(index, [id]);
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = uuid();
 
   const app = appMap.toJSON() as App;
   app.update = Y.encodeStateAsUpdate(appDoc);
@@ -168,6 +159,23 @@ export function insertTaskList(
   store.docs.taskLists[tl.id] = doc;
   store.emit();
   return [tl, Promise.all([createTaskListAsync(tl), updateAppAsync(app)])];
+}
+
+export function addTaskList(taskListId: string) {
+  const appDoc = store.docs.app;
+  const appMap = appDoc.getMap("app");
+  const taskListIdArray = appMap.get("taskListIds") as Y.Array<string>;
+  if (!taskListIdArray.toArray().includes(taskListId)) {
+    taskListIdArray.push([taskListId]);
+  }
+
+  const app = appMap.toJSON() as App;
+  app.update = Y.encodeStateAsUpdate(appDoc);
+
+  store.data.app = app;
+  store.docs.app = appDoc;
+  store.emit();
+  return [app, updateAppAsync(app)];
 }
 
 export function updateTaskList(
@@ -315,6 +323,23 @@ export function clearCompletedTasks(
   store.docs.taskLists[tl.id] = doc;
   store.emit();
   return [tl, updateTaskListAsync(tl)];
+}
+
+export function getTaskListsByShareCodes(shareCodes: string[]) {
+  return getTaskListsByShareCodesAsync(shareCodes).then((res) => {
+    for (const tl of res.taskLists) {
+      const doc = store.docs.taskLists[tl.id] || new Y.Doc();
+      store.docs.taskLists[tl.id] = doc;
+      Y.applyUpdate(doc, Uint8Array.from(Object.values(tl.update)));
+      const taskList = doc.getMap(tl.id);
+      store.data.taskLists[tl.id] = {
+        ...taskList.toJSON(),
+        shareCode: tl.shareCode,
+      } as TaskList;
+    }
+    store.emit();
+    return { taskLists: store.data.taskLists };
+  });
 }
 
 /* Task */
