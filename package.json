@@ -1,7 +1,5 @@
 {
   "name": "lightlist",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ]
+  "workspaces": ["packages/sdk"]
 }
