@@ -149,6 +149,11 @@ function TaskListComponent(props: TaskListComponentProps) {
           />
           <button>Add Task</button>
         </form>
+        <p>
+          {window.location.origin +
+            window.location.pathname +
+            `/share?shareCodes=${taskList.shareCode}`}
+        </p>
         <button
           onClick={() => {
             sortTasks(taskList.id);
