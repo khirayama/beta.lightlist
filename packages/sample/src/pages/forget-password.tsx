@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { sendPasswordResetRequest } from "../sdk/actions";
+import { sendPasswordResetRequest } from "sdk";
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");

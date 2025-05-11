@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { login } from "../sdk/actions";
-import { setSessionStorage } from "../sdk/session";
+import { setSessionStorage, login } from "sdk";
 
 setSessionStorage("web");
 

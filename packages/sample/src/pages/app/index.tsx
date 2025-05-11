@@ -17,8 +17,8 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 
-import { setSessionStorage } from "../../sdk/session";
 import {
+  setSessionStorage,
   init,
   insertTaskList,
   updateTaskList,
@@ -29,9 +29,10 @@ import {
   moveTask,
   clearCompletedTasks,
   moveTaskList,
-} from "../../sdk/actions";
-import { store } from "../../sdk/store";
-import { Task, TaskList } from "../../sdk/types";
+  store,
+  type Task,
+  type TaskList,
+} from "sdk";
 
 /* Features
  * [x] タスクリストの追加

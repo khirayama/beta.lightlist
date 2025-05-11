@@ -1,8 +1,7 @@
 import { useState, useEffect, useSyncExternalStore, FormEvent } from "react";
 
-import { store } from "../../sdk/store";
-import { setSessionStorage } from "../../sdk/session";
 import {
+  setSessionStorage,
   init,
   updatePreferences,
   updateEmail,
@@ -10,8 +9,9 @@ import {
   logout,
   deleteUser,
   loadSession,
-} from "../../sdk/actions";
-import { Preferences } from "../../sdk/types";
+  store,
+  type Preferences,
+} from "sdk";
 
 /* Features
  * [x] DisplayNameの更新
