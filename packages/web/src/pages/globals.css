@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --bg-color: #ffffff;
+  --text-color: #000000;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-color: #121212;
+  --text-color: #ffffff;
+}
+
+html {
+  font-family: "Inter", "Noto Sans JP", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: "slnt" 0;
+  color: rgba(3, 10, 18, 0.81);
+  fill: rgba(3, 10, 18, 0.81);
+  text-rendering: optimizeLegibility;
+  text-box: trim-both cap alphabetic;
+  color-scheme: light dark;
+  text-wrap: balance;
+}

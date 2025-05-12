@@ -1,0 +1,54 @@
+{
+  "name": "Lightlist",
+  "short_name": "Lightlist",
+  "description": "Lightlist",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/app?standalone=true",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://placehold.jp/1200x800.png",
+      "sizes": "1200x800",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "https://placehold.jp/1200x800.png",
+      "sizes": "1200x800",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "https://placehold.jp/1200x800.png",
+      "sizes": "1200x800",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "https://placehold.jp/320x640.png",
+      "sizes": "320x640",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://placehold.jp/320x640.png",
+      "sizes": "320x640",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://placehold.jp/320x640.png",
+      "sizes": "320x640",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
