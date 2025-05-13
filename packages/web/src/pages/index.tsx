@@ -1,25 +1,31 @@
-const useCustomTranslation = (p: string) => {
-  return {
-    t: (m: string) => {
-      return p + "." + m;
-    },
-  };
-};
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-export default function IndexPage({ lang }) {
-  const { t } = useCustomTranslation("pages.index");
+function LinkButton({ href, children }) {
+  return (
+    <a
+      href={href}
+      className="rounded-full border px-4 py-2 focus-visible:bg-gray-200 text-center"
+    >
+      {children}
+    </a>
+  );
+}
+
+export default function IndexPage({ locale }) {
+  const { t } = useTranslation("pages/index");
 
   return (
     <div>
       <header className="mx-auto max-w-2xl py-4 text-right">
         <a
-          href="/?lang=en"
+          href="/?locale=en"
           className="rounded-sm px-4 py-2 focus-visible:bg-gray-200"
         >
           English
         </a>
         <a
-          href="/?lang=ja"
+          href="/?locale=ja"
           className="rounded-sm px-4 py-2 focus-visible:bg-gray-200"
         >
           日本語
@@ -35,12 +41,9 @@ export default function IndexPage({ lang }) {
           <h1 className="p-4 text-center">Lightlist</h1>
         </div>
         <div className="p-4 text-center">
-          <a
-            href={`/login?lang=${lang}`}
-            className="rounded-full border px-4 py-2 focus-visible:bg-gray-200"
-          >
+          <LinkButton href={`/login?locale=${locale}`}>
             {t("Get started")}
-          </a>
+          </LinkButton>
         </div>
         <div className="m-auto max-w-lg p-8 text-justify">
           <p className="my-4">
@@ -58,31 +61,32 @@ export default function IndexPage({ lang }) {
         <div className="relative mx-auto aspect-video max-w-3xl overflow-hidden">
           <img
             className="absolute bottom-[-100px] left-[32px] w-[80%] min-w-[320px] shadow-2xl"
-            src={`/screenshot_${lang}_desktop.png`}
+            src={`/screenshot_${locale}_desktop.png`}
           />
           <img
             className="absolute right-[32px] bottom-[-60px] w-[24%] min-w-[105px] rotate-6 shadow-2xl"
-            src={`/screenshot_${lang}_mobile.png`}
+            src={`/screenshot_${locale}_mobile.png`}
           />
         </div>
       </div>
 
       <footer className="p-12 text-center">
         <div className="p-4 text-center">
-          <a
-            href={`/login?lang=${lang}`}
-            className="rounded-full border px-4 py-2 focus-visible:bg-gray-200"
-          >
+          <LinkButton href={`/login?locale=${locale}`}>
             {t("Get started")}
-          </a>
+          </LinkButton>
         </div>
       </footer>
     </div>
   );
 }
 
-export const getServerSideProps = async ({ query }) => {
+export const getServerSideProps = async ({ query, locale }) => {
+  const l = query.locale || locale;
   return {
-    props: { lang: query.lang || "ja" },
+    props: {
+      locale: l,
+      ...(await serverSideTranslations(l, ["pages/index"])),
+    },
   };
 };
