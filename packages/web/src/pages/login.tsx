@@ -125,7 +125,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("password");
-  const [view, setView] = useState<"register" | "reset">("register");
+  const [view, setView] = useState<"login" | "reset">("login");
   const [error, setError] = useState(null);
 
   const resetSent = false;
@@ -144,7 +144,7 @@ export default function LoginPage() {
       <div className="mx-auto flex h-full max-w-sm items-center justify-center py-12">
         <div className="w-full px-4 pb-16">
           <h2 className="mb-6 text-center text-xl font-semibold">
-            {view === "register" ? t("Log In") : t("Reset Password")}
+            {view === "login" ? t("Log In") : t("Reset Password")}
           </h2>
           {resetSent ? (
             <div className="text-center">
@@ -153,7 +153,7 @@ export default function LoginPage() {
               </p>
               <button
                 onClick={() => {
-                  setView("register");
+                  setView("login");
                   setResetSent(false);
                 }}
                 className="text-primary hover:underline"
@@ -201,12 +201,12 @@ export default function LoginPage() {
 
                 <SubmitButton
                   text={
-                    view === "register"
+                    view === "login"
                       ? t("Sign Up or Sign In")
                       : t("Send reset password instructions")
                   }
                   loadingText={
-                    view === "register" ? t("Logging In") : t("Sending...")
+                    view === "login" ? t("Logging In") : t("Sending...")
                   }
                   isLoading={isLoading}
                 />
@@ -224,7 +224,7 @@ export default function LoginPage() {
               ) : (
                 <div className="text-center">
                   <button
-                    onClick={() => setView("register")}
+                    onClick={() => setView("login")}
                     className="text-primary text-sm hover:underline"
                   >
                     {t("Back to Login")}
