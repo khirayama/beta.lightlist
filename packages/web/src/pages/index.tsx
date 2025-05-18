@@ -1,16 +1,7 @@
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
-function LinkButton({ href, children }) {
-  return (
-    <a
-      href={href}
-      className="rounded-full border px-4 py-2 focus-visible:bg-gray-200 text-center"
-    >
-      {children}
-    </a>
-  );
-}
+import { ButtonLink } from "components/LinkButton";
 
 export default function IndexPage({ locale }) {
   const { t } = useTranslation("pages/index");
@@ -41,9 +32,9 @@ export default function IndexPage({ locale }) {
           <h1 className="p-4 text-center">Lightlist</h1>
         </div>
         <div className="p-4 text-center">
-          <LinkButton href={`/login?locale=${locale}`}>
+          <ButtonLink href={`/register?locale=${locale}`}>
             {t("Get started")}
-          </LinkButton>
+          </ButtonLink>
         </div>
         <div className="m-auto max-w-lg p-8 text-justify">
           <p className="my-4">
@@ -72,9 +63,9 @@ export default function IndexPage({ locale }) {
 
       <footer className="p-12 text-center">
         <div className="p-4 text-center">
-          <LinkButton href={`/login?locale=${locale}`}>
+          <ButtonLink href={`/login?locale=${locale}`}>
             {t("Get started")}
-          </LinkButton>
+          </ButtonLink>
         </div>
       </footer>
     </div>
