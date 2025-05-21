@@ -3,7 +3,7 @@ import { useTranslation } from "next-i18next";
 
 import { register } from "sdk";
 
-import { Link, Button } from "components/LinkButton";
+import { Link } from "components/LinkButton";
 
 type FormFieldProps = {
   label: string;
