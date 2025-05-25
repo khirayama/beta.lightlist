@@ -26,6 +26,7 @@ import {
   clearCompletedTasks,
   type Task,
   type TaskList,
+  type Preferences,
 } from "sdk";
 
 import { ComponentEventHandler } from "types";
@@ -123,11 +124,13 @@ function TaskListItem(props: TaskListItemProps) {
 }
 
 interface TaskListProps {
+  preferences: Preferences;
   taskList: TaskList;
 }
 
 export function TaskList(props: TaskListProps) {
   const taskList = props.taskList;
+  const preferences = props.preferences;
 
   const [taskListName, setTaskListName] = useState(taskList.name);
   const [newTaskText, setNewTaskText] = useState("");
@@ -173,11 +176,11 @@ export function TaskList(props: TaskListProps) {
           onSubmit={(e) => {
             e.preventDefault();
             if (newTaskText !== "") {
-              insertTask(
-                taskList.id,
-                { text: newTaskText },
-                taskList.tasks.length
-              );
+              const idx =
+                preferences.taskInsertPosition === "TOP"
+                  ? 0
+                  : taskList.tasks.length;
+              insertTask(taskList.id, { text: newTaskText }, idx);
               setNewTaskText("");
             }
           }}
