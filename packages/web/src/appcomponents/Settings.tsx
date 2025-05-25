@@ -1,16 +1,16 @@
-import { useState, useEffect, useSyncExternalStore, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 
 import {
-  init,
   updatePreferences,
   updateEmail,
   updatePassword,
   logout,
   deleteUser,
   loadSession,
-  store,
   type Preferences,
 } from "sdk";
+
+import { NavigateLink } from "navigation/react";
 
 /* Features
  * [x] DisplayNameの更新
@@ -23,31 +23,22 @@ import {
  * [x] DeleteAccountの実装
  */
 
-export default function SettingsPage() {
-  const state = useSyncExternalStore(
-    store.subscribe,
-    () => store.data,
-    () => store.data
-  );
+export function Settings(props: { preferences: Preferences }) {
+  const preferences = props.preferences;
 
   const [displayName, setDisplayName] = useState<string>(
-    state.preferences.displayName || ""
+    preferences.displayName || ""
   );
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState<string>(loadSession().user.email || "");
   const [oldPassword, setOldPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState<string>("");
 
-  useEffect(() => {
-    setEmail(loadSession().user.email);
-    init().then((res) => {
-      setDisplayName(res.preferences.displayName);
-    });
-  }, []);
-
   return (
     <div>
-      <a href="/app">App</a>
+      <NavigateLink to="/home" method="popTo">
+        App
+      </NavigateLink>
       <h1>Settings</h1>
       <section>
         <form
@@ -140,7 +131,7 @@ export default function SettingsPage() {
         <div>
           <h2>Appearance</h2>
           <select
-            value={state.preferences.theme}
+            value={preferences.theme}
             onChange={(e: FormEvent<HTMLSelectElement>) => {
               updatePreferences({
                 theme: e.currentTarget.value as Preferences["theme"],
@@ -160,7 +151,7 @@ export default function SettingsPage() {
         <div>
           <h2>Lang</h2>
           <select
-            value={state.preferences.lang}
+            value={preferences.lang}
             onChange={(e: FormEvent<HTMLSelectElement>) => {
               updatePreferences({
                 lang: e.currentTarget.value as Preferences["lang"],
@@ -181,7 +172,7 @@ export default function SettingsPage() {
           <h2>Auto Sort</h2>
           <input
             type="checkbox"
-            checked={state.preferences.autoSort}
+            checked={preferences.autoSort}
             onChange={(e) => {
               updatePreferences({
                 autoSort: e.currentTarget.checked,
@@ -193,7 +184,7 @@ export default function SettingsPage() {
         <div>
           <h2>Insert Posision</h2>
           <select
-            value={state.preferences.taskInsertPosition}
+            value={preferences.taskInsertPosition}
             onChange={(e: FormEvent<HTMLSelectElement>) => {
               updatePreferences({
                 taskInsertPosition: e.currentTarget
