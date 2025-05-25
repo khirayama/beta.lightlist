@@ -8,6 +8,13 @@ import {
 } from "react";
 import { match, MatchFunction } from "path-to-regexp";
 
+/*
+ * type RouteDefinition
+ * NavigationProvider
+ * useNavigation
+ * NavigateLink
+ */
+
 type RouteDefinition = {};
 
 export type RouteDefinitions = Record<string, RouteDefinition>;
