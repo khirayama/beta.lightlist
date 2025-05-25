@@ -193,6 +193,7 @@ export function updateTaskList(
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskList.id].shareCode;
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
@@ -289,6 +290,7 @@ function sortTasksWithoutEmit(taskListId: string) {
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskListId].shareCode;
 }
 
 export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
@@ -299,6 +301,7 @@ export function sortTasks(taskListId: string): [TaskList, Promise<any>] {
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskListId].shareCode;
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
@@ -324,6 +327,7 @@ export function clearCompletedTasks(
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskListId].shareCode;
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
@@ -371,6 +375,7 @@ export function insertTask(
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskListId].shareCode;
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
@@ -396,6 +401,7 @@ export function updateTask(
 
   const tl = taskListMap.toJSON() as TaskList;
   tl.update = Y.encodeStateAsUpdate(doc);
+  tl.shareCode = store.data.taskLists[taskListId].shareCode;
 
   store.data.taskLists[tl.id] = tl;
   store.docs.taskLists[tl.id] = doc;
