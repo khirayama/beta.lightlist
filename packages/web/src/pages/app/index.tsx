@@ -136,16 +136,17 @@ function AppPage(props: {
       <div>
         <NavigateLink to="/settings">Settings</NavigateLink>
       </div>
-      <div style={{ display: "flex" }}>
+      <div className="flex">
         <ul>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               if (newTaskListName !== "") {
-                insertTaskList(
+                const [newTaskList] = insertTaskList(
                   { name: newTaskListName },
                   app.taskListIds.length
                 );
+                setSelectedTaskListId(newTaskList.id);
                 setNewTaskListName("");
               }
             }}
