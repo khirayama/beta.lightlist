@@ -155,24 +155,28 @@ export function TaskList(props: TaskListProps) {
   return (
     <section>
       <header>
-        <input
-          type="text"
-          value={taskListName}
-          onChange={(e) => {
-            const newName = e.currentTarget.value;
-            setTaskListName(newName);
-          }}
-          onBlur={() => {
-            if (taskListName !== taskList.name) {
-              updateTaskList({
-                ...taskList,
-                name: taskListName,
-              });
-            }
-          }}
-        />
+        <div>
+          <input
+            className="inline-block w-full"
+            type="text"
+            value={taskListName}
+            onChange={(e) => {
+              const newName = e.currentTarget.value;
+              setTaskListName(newName);
+            }}
+            onBlur={() => {
+              if (taskListName !== taskList.name) {
+                updateTaskList({
+                  ...taskList,
+                  name: taskListName,
+                });
+              }
+            }}
+          />
+        </div>
 
         <form
+          className="flex w-full"
           onSubmit={(e) => {
             e.preventDefault();
             if (newTaskText !== "") {
@@ -185,21 +189,20 @@ export function TaskList(props: TaskListProps) {
             }
           }}
         >
-          <input
-            type="text"
-            placeholder="New Task"
-            value={newTaskText}
-            onChange={(e) => {
-              setNewTaskText(e.currentTarget.value);
-            }}
-          />
+          <div className="flex-1">
+            <input
+              className="flex"
+              type="text"
+              placeholder="New Task"
+              value={newTaskText}
+              onChange={(e) => {
+                setNewTaskText(e.currentTarget.value);
+              }}
+            />
+          </div>
           <button>Add Task</button>
         </form>
-        <p>
-          {window.location.origin +
-            window.location.pathname +
-            `/share?shareCodes=${taskList.shareCode}`}
-        </p>
+
         <button
           onClick={() => {
             sortTasks(taskList.id);
