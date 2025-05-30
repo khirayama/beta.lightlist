@@ -35,6 +35,13 @@ import {
 } from "navigation/react";
 import { TaskList as TaskListComponent } from "appcomponents/TaskList";
 import { Settings } from "appcomponents/Settings";
+import {
+  Carousel,
+  CarouselIndicator,
+  CarouselList,
+  CarouselItem,
+} from "components/Carousel";
+import { DrawerLayout, Drawer, Main } from "components/DrawerLayout";
 
 /* Features
  * [x] タスクリストの追加
@@ -91,7 +98,7 @@ function TaskListListItemComponent(props: TaskListListItemComponentProps) {
   );
 }
 
-function AppPage(props: {
+function AppContent(props: {
   app: App;
   taskLists: { [id: string]: TaskList };
   preferences: Preferences;
@@ -103,7 +110,6 @@ function AppPage(props: {
 
   const app = props.app;
   const taskLists = props.taskLists;
-  const taskList = taskLists[selectedTaskListId];
   const preferences = props.preferences;
 
   useEffect(() => {
@@ -128,76 +134,116 @@ function AppPage(props: {
       moveTaskList(from, to);
     }
   };
+
   if (navigation.getAttr().match === "/settings") {
     return <Settings preferences={preferences} />;
   }
+
   return (
-    <div>
-      <div>
-        <NavigateLink to="/settings">Settings</NavigateLink>
-      </div>
-      <div className="flex">
-        <ul>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newTaskListName !== "") {
-                const [newTaskList] = insertTaskList(
-                  { name: newTaskListName },
-                  app.taskListIds.length
-                );
-                setSelectedTaskListId(newTaskList.id);
-                setNewTaskListName("");
-              }
+    <>
+      <Drawer>
+        <div className="bg-white w-full h-full">
+          <div>
+            <NavigateLink to="/settings">Settings</NavigateLink>
+          </div>
+          <ul>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (newTaskListName !== "") {
+                  const [newTaskList] = insertTaskList(
+                    { name: newTaskListName },
+                    app.taskListIds.length
+                  );
+                  setSelectedTaskListId(newTaskList.id);
+                  setNewTaskListName("");
+                }
+              }}
+            >
+              <input
+                type="text"
+                placeholder="New Task List"
+                value={newTaskListName}
+                onChange={(e) => {
+                  setNewTaskListName(e.currentTarget.value);
+                }}
+              />
+              <button>Add Task List</button>
+            </form>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              modifiers={[restrictToVerticalAxis]}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={app.taskListIds.map((tlid) => taskLists[tlid])}
+                strategy={verticalListSortingStrategy}
+              >
+                {app?.taskListIds.map((tlid) => {
+                  return (
+                    taskLists[tlid] && (
+                      <TaskListListItemComponent
+                        key={tlid}
+                        taskList={taskLists[tlid]}
+                        onClick={() => {
+                          setSelectedTaskListId(tlid);
+                        }}
+                      />
+                    )
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
+          </ul>
+        </div>
+      </Drawer>
+
+      <Main>
+        <NavigateLink to="/menu">menu</NavigateLink>
+        <div className="w-full bg-red-400">
+          <Carousel
+            index={app.taskListIds.indexOf(selectedTaskListId)}
+            handleIndexChange={(p, s, e) => {
+              setSelectedTaskListId(app.taskListIds[e.index]);
             }}
           >
-            <input
-              type="text"
-              placeholder="New Task List"
-              value={newTaskListName}
-              onChange={(e) => {
-                setNewTaskListName(e.currentTarget.value);
-              }}
-            />
-            <button>Add Task List</button>
-          </form>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={app.taskListIds.map((tlid) => taskLists[tlid])}
-              strategy={verticalListSortingStrategy}
-            >
-              {app?.taskListIds.map((tlid) => {
+            <CarouselIndicator />
+            <CarouselList>
+              {app.taskListIds.map((tlid) => {
+                if (!taskLists[tlid]) {
+                  return null;
+                }
                 return (
-                  taskLists[tlid] && (
-                    <TaskListListItemComponent
+                  <CarouselItem key={tlid}>
+                    <TaskListComponent
                       key={tlid}
                       taskList={taskLists[tlid]}
-                      onClick={() => {
-                        setSelectedTaskListId(tlid);
-                      }}
+                      preferences={preferences}
                     />
-                  )
+                  </CarouselItem>
                 );
               })}
-            </SortableContext>
-          </DndContext>
-        </ul>
-        <div style={{ flex: 1 }}>
-          {taskList && (
-            <TaskListComponent
-              key={taskList.id}
-              taskList={taskList}
-              preferences={preferences}
-            />
-          )}
+            </CarouselList>
+          </Carousel>
         </div>
-      </div>
-    </div>
+      </Main>
+    </>
+  );
+}
+
+function AppPage(props: {
+  app: App;
+  taskLists: { [id: string]: TaskList };
+  preferences: Preferences;
+}) {
+  const navigation = useNavigation();
+  const attr = navigation.getAttr();
+
+  return (
+    <DrawerLayout isDrawerOpen={attr.match === "/menu"}>
+      <AppContent {...props} />
+    </DrawerLayout>
   );
 }
 
