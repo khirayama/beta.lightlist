@@ -48,7 +48,7 @@ export function NavigationProvider({
   initialPath,
   routes,
 }: NavigationProviderProps) {
-  const ref = useRef<string[]>([]);
+  const stack = useRef<string[]>([]);
   const referrer = useRef<string>("");
   const [isInBrowser, setIsInBrowser] = useState(false);
   const [, setRender] = useState(Date.now());
@@ -61,15 +61,15 @@ export function NavigationProvider({
     if (isInBrowser) {
       window.addEventListener("popstate", (e) => {
         e.preventDefault();
-        ref.current = e.state?.stack || [initialPath];
+        stack.current = e.state?.stack || [initialPath];
         setRender(Date.now());
       });
 
       const { pathname: pathname, search } = getPathnameAndSearchFromHash();
       const path = !pathname ? initialPath : pathname;
-      ref.current.push(path);
+      stack.current.push(path);
       window.history.pushState(
-        { stack: ref.current },
+        { stack: stack.current },
         "",
         `#${path}?${search}`
       );
@@ -79,34 +79,37 @@ export function NavigationProvider({
 
   const navigation: Navigation = {
     push: (path: string) => {
-      referrer.current = ref.current[ref.current.length - 1];
-      ref.current.push(path);
-      window.history.pushState({ stack: ref.current }, "", `#${path}`);
+      referrer.current = stack.current[stack.current.length - 1];
+      stack.current.push(path);
+      window.history.pushState({ stack: stack.current }, "", `#${path}`);
       setRender(Date.now());
     },
     navigate: (path: string) => {
-      if (ref.current[ref.current.length - 1] !== path) {
+      referrer.current = stack.current[stack.current.length - 1];
+      if (stack.current[stack.current.length - 1] !== path) {
         navigation.push(path);
       }
     },
     goBack: () => {
-      if (ref.current.length > 1) {
+      referrer.current = stack.current[stack.current.length - 1];
+      if (stack.current.length > 1) {
         window.history.back();
-        ref.current.pop();
+        stack.current.pop();
       }
       setRender(Date.now());
     },
     popTo: (targetPath: string) => {
-      const hasTargetPath = ref.current.includes(targetPath);
+      referrer.current = stack.current[stack.current.length - 1];
+      const hasTargetPath = stack.current.includes(targetPath);
       if (hasTargetPath) {
-        while (ref.current[ref.current.length - 1] !== targetPath) {
+        while (stack.current[stack.current.length - 1] !== targetPath) {
           window.history.back();
-          ref.current.pop();
+          stack.current.pop();
         }
       } else {
-        ref.current[ref.current.length - 1] = targetPath;
+        stack.current[stack.current.length - 1] = targetPath;
         window.history.replaceState(
-          { stack: ref.current },
+          { stack: stack.current },
           "",
           `#${targetPath}`
         );
@@ -114,16 +117,17 @@ export function NavigationProvider({
       setRender(Date.now());
     },
     popToTop: () => {
-      const hasTargetPath = ref.current.includes(initialPath);
+      referrer.current = stack.current[stack.current.length - 1];
+      const hasTargetPath = stack.current.includes(initialPath);
       if (hasTargetPath) {
-        while (ref.current[ref.current.length - 1] !== initialPath) {
+        while (stack.current[stack.current.length - 1] !== initialPath) {
           window.history.back();
-          ref.current.pop();
+          stack.current.pop();
         }
       } else {
-        ref.current[ref.current.length - 1] = initialPath;
+        stack.current[stack.current.length - 1] = initialPath;
         window.history.replaceState(
-          { stack: ref.current },
+          { stack: stack.current },
           "",
           `#${initialPath}`
         );
@@ -147,7 +151,7 @@ export function NavigationProvider({
         };
         return {
           routes,
-          stack: ref.current,
+          stack: stack.current,
           match: route,
           path: params.path,
           params: params.params,
