@@ -5,21 +5,20 @@ import { sessionStorage } from "./session";
 
 const API_URL = "http://localhost:3000";
 
+let isRefreshing = null;
 const refreshToken = (() => {
-  let isRefreshing = null;
-
   return () => {
-    console.warn("Checking token", isRefreshing);
-
     if (isRefreshing) {
+      console.log("is refreshing", isRefreshing);
       return isRefreshing;
     }
-
+    console.log("preparing to refresh", isRefreshing);
     isRefreshing = new Promise((resolve, reject) => {
       const s = sessionStorage.load();
       const min3 = 60 * 3;
 
       if (s.session.expiresAt - Date.now() / 1000 < min3) {
+        console.log("start refreshing");
         axios
           .post(
             "/api/auth/refresh",
@@ -31,20 +30,28 @@ const refreshToken = (() => {
             }
           )
           .then((res) => {
+            console.log("refresh success");
             sessionStorage.save(res.data);
             return resolve(res.data);
           })
           .catch((err) => {
+            console.log("refresh failed", err);
             reject(err);
             throw new Error(err.response.data.error);
           })
           .finally(() => {
+            console.log("refresh finished");
             isRefreshing = null;
           });
       } else {
-        resolve(s);
+        setTimeout(() => {
+          resolve(s);
+          isRefreshing = null;
+          console.log("valid token, no need to refresh", isRefreshing);
+        }, 0);
       }
     });
+    console.log("return isRefreshing", isRefreshing);
     return isRefreshing;
   };
 })();
