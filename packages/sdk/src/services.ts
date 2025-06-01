@@ -9,48 +9,48 @@ let isRefreshing = null;
 const refreshToken = (() => {
   return () => {
     if (isRefreshing) {
-      console.log("is refreshing", isRefreshing);
+      console.log("on refreshing process", isRefreshing);
       return isRefreshing;
     }
     console.log("preparing to refresh", isRefreshing);
-    isRefreshing = new Promise((resolve, reject) => {
-      const s = sessionStorage.load();
-      const min3 = 60 * 3;
+    
+    const s = sessionStorage.load();
+    const min3 = 60 * 3;
 
-      if (s.session.expiresAt - Date.now() / 1000 < min3) {
-        console.log("start refreshing");
-        axios
-          .post(
-            "/api/auth/refresh",
-            {
-              refreshToken: s.session.refreshToken,
-            },
-            {
-              baseURL: API_URL,
-            }
-          )
-          .then((res) => {
-            console.log("refresh success");
-            sessionStorage.save(res.data);
-            return resolve(res.data);
-          })
-          .catch((err) => {
-            console.log("refresh failed", err);
-            reject(err);
-            throw new Error(err.response.data.error);
-          })
-          .finally(() => {
-            console.log("refresh finished");
-            isRefreshing = null;
-          });
-      } else {
-        setTimeout(() => {
-          resolve(s);
+    if (s.session.expiresAt - Date.now() / 1000 < min3) {
+      console.log("start refreshing");
+      isRefreshing = axios
+        .post(
+          "/api/auth/refresh",
+          {
+            refreshToken: s.session.refreshToken,
+          },
+          {
+            baseURL: API_URL,
+          }
+        )
+        .then((res) => {
+          console.log("refresh success");
+          sessionStorage.save(res.data);
+          return res.data;
+        })
+        .catch((err) => {
+          console.log("refresh failed", err);
+          throw new Error(err.response.data.error);
+        })
+        .finally(() => {
+          console.log("refresh finished");
           isRefreshing = null;
-          console.log("valid token, no need to refresh", isRefreshing);
-        }, 0);
-      }
-    });
+        });
+    } else {
+      isRefreshing = Promise.resolve(s);
+      setTimeout(() => {
+        isRefreshing = null;
+        console.log("valid token, no need to refresh", isRefreshing);
+      }, 0);
+      console.log("valid token, no need to refresh", isRefreshing);
+    }
+    
     console.log("return isRefreshing", isRefreshing);
     return isRefreshing;
   };
