@@ -35,9 +35,9 @@ export function Settings(props: { preferences: Preferences }) {
   const [newPasswordConfirm, setNewPasswordConfirm] = useState<string>("");
 
   return (
-    <div>
-      <NavigateLink to="/home" method="popTo">
-        App
+    <div className="bg-blue-400">
+      <NavigateLink to="/menu" method="popTo">
+        menu
       </NavigateLink>
       <h1>Settings</h1>
       <section>
