@@ -33,14 +33,8 @@ import {
   useNavigation,
   NavigateLink,
 } from "navigation/react";
-import { TaskList as TaskListComponent } from "appcomponents/TaskList";
 import { Settings } from "appcomponents/Settings";
-import {
-  Carousel,
-  CarouselIndicator,
-  CarouselList,
-  CarouselItem,
-} from "components/Carousel";
+import { Home } from "appcomponents/Home";
 import { DrawerLayout, Drawer, Main } from "components/DrawerLayout";
 
 /* Features
@@ -86,7 +80,9 @@ function TaskListListItemComponent(props: TaskListListItemComponentProps) {
       <span ref={setActivatorNodeRef} {...listeners} {...attributes}>
         H
       </span>
-      {taskList?.name}({taskList?.tasks.length})
+      <NavigateLink to="/home" method="popTo">
+        {taskList?.name}
+      </NavigateLink>
       <button
         onClick={() => {
           deleteTaskList(taskList.id);
@@ -135,8 +131,27 @@ function AppContent(props: {
     }
   };
 
-  if (navigation.getAttr().match === "/settings") {
-    return <Settings preferences={preferences} />;
+  const attr = navigation.getAttr();
+  let Content = null;
+  if (
+    attr.match === "/home" ||
+    (attr.match === "/menu" && attr.referrer === "/home")
+  ) {
+    Content = (
+      <Home
+        index={app.taskListIds.indexOf(selectedTaskListId)}
+        handleIndexChange={(p, s, e) => {
+          setSelectedTaskListId(app.taskListIds[e.index]);
+        }}
+        taskLists={app.taskListIds.map((tlid) => taskLists[tlid])}
+        preferences={preferences}
+      />
+    );
+  } else if (
+    attr.match === "/settings" ||
+    (attr.match === "/menu" && attr.referrer === "/settings")
+  ) {
+    Content = <Settings preferences={preferences} />;
   }
 
   return (
@@ -199,35 +214,7 @@ function AppContent(props: {
         </div>
       </Drawer>
 
-      <Main>
-        <NavigateLink to="/menu">menu</NavigateLink>
-        <div className="w-full bg-red-400">
-          <Carousel
-            index={app.taskListIds.indexOf(selectedTaskListId)}
-            handleIndexChange={(p, s, e) => {
-              setSelectedTaskListId(app.taskListIds[e.index]);
-            }}
-          >
-            <CarouselIndicator />
-            <CarouselList>
-              {app.taskListIds.map((tlid) => {
-                if (!taskLists[tlid]) {
-                  return null;
-                }
-                return (
-                  <CarouselItem key={tlid}>
-                    <TaskListComponent
-                      key={tlid}
-                      taskList={taskLists[tlid]}
-                      preferences={preferences}
-                    />
-                  </CarouselItem>
-                );
-              })}
-            </CarouselList>
-          </Carousel>
-        </div>
-      </Main>
+      <Main>{Content}</Main>
     </>
   );
 }
