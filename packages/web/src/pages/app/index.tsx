@@ -33,9 +33,9 @@ import {
   useNavigation,
   NavigateLink,
 } from "navigation/react";
-import { Settings } from "appcomponents/Settings";
-import { Home } from "appcomponents/Home";
 import { DrawerLayout, Drawer, Main } from "components/DrawerLayout";
+import { Settings } from "pages/app/_routes/Settings";
+import { Home } from "pages/app/_routes/Home";
 
 /* Features
  * [x] タスクリストの追加
