@@ -9,11 +9,26 @@ import {
 import { match, MatchFunction } from "path-to-regexp";
 
 /*
+ * type NavigationAttr
  * type RouteDefinition
  * NavigationProvider
  * useNavigation
  * NavigateLink
  */
+
+interface RouteParams {
+  [key: string]: string;
+}
+
+interface NavigationAttr {
+  routes?: Record<string, unknown>;
+  stack?: string[];
+  match?: string;
+  path?: string;
+  params?: RouteParams;
+  props?: unknown;
+  referrer?: string;
+}
 
 type RouteDefinition = {};
 
@@ -32,7 +47,7 @@ type Navigation = {
   goBack: () => void;
   popTo: (path: string) => void;
   popToTop: () => void;
-  getAttr: () => Record<string, any>;
+  getAttr: () => NavigationAttr;
 };
 
 type NavigationProviderProps = {
@@ -145,9 +160,9 @@ export function NavigationProvider({
         return m(pathname);
       });
       if (route) {
-        const params = match<Record<string, string>>(route)(pathname) as {
+        const params = match<RouteParams>(route)(pathname) as {
           path: string;
-          params: Record<string, any>;
+          params: RouteParams;
         };
         return {
           routes,

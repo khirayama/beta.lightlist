@@ -99,7 +99,7 @@ function TaskListItem(props: TaskListItemProps) {
       />
       <TaskTextInput
         task={task}
-        handleBlur={(_: unknown, { text }) => {
+        handleBlur={(_, { text }) => {
           if (text !== task.text) {
             updateTask(taskList.id, {
               ...task,

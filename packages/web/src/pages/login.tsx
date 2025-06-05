@@ -128,7 +128,7 @@ export default function LoginPage() {
   const [view, setView] = useState<"login" | "reset">("login");
   const [error, setError] = useState(null);
 
-  const resetSent = false;
+  const [resetSent, setResetSent] = useState(false);
   const isLoading = false;
 
   return (

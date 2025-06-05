@@ -8,10 +8,11 @@ import {
 } from "components/Carousel";
 import { TaskList as TaskListComponent } from "appcomponents/TaskList";
 import { NavigateLink } from "navigation/react";
+import { ComponentEventHandler } from "types";
 
 export function Home(props: {
   index: number;
-  handleIndexChange?: () => void;
+  handleIndexChange?: ComponentEventHandler<{ index: number }, Record<string, unknown>, { index: number }>;
   taskLists: TaskList[];
   preferences: Preferences;
 }) {

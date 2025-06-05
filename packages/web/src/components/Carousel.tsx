@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import clsx from "clsx";
+import { ComponentEventHandler } from "types";
 
 /*
  * CarouselIndicator
@@ -17,9 +18,9 @@ import clsx from "clsx";
  */
 
 const createDebounce = () => {
-  let timeoutId = null;
-  return (fn: Function, t: number) => {
-    clearTimeout(timeoutId);
+  let timeoutId: NodeJS.Timeout | null = null;
+  return (fn: () => void, t: number) => {
+    if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       fn();
     }, t);
@@ -28,11 +29,22 @@ const createDebounce = () => {
 
 const scrollDebounce = createDebounce();
 
-const CarouselContext = createContext(null);
+interface CarouselContextValue {
+  index: number;
+  length: number;
+}
+
+interface CarouselActions {
+  setLength: (length: number) => void;
+  handleIndexChange?: ComponentEventHandler<{ index: number }, Record<string, unknown>, { index: number }>;
+}
+
+const CarouselContext = createContext<[CarouselContextValue, CarouselActions] | null>(null);
 
 export function CarouselIndicator() {
-  const [{ index, length }, { handleIndexChange }] =
-    useContext(CarouselContext);
+  const context = useContext(CarouselContext);
+  if (!context) throw new Error('CarouselIndicator must be used within a Carousel');
+  const [{ index, length }, { handleIndexChange }] = context;
   const indicator = Array.from({ length }, (_, i) => i);
 
   return (
@@ -46,7 +58,9 @@ export function CarouselIndicator() {
               i === index ? "bg-gray-200" : "bg-gray-500"
             )}
             onClick={() => {
-              handleIndexChange(i);
+              if (handleIndexChange) {
+                handleIndexChange({ index: i }, {}, { index: i });
+              }
             }}
           />
         );
@@ -58,7 +72,7 @@ export function CarouselIndicator() {
 export function Carousel(props: {
   children: ReactNode;
   index: number;
-  handleIndexChange?: (p: { index: number }, s: {}, payload: { index }) => void;
+  handleIndexChange?: ComponentEventHandler<{ index: number }, Record<string, unknown>, { index: number }>;
 }) {
   const [length, setLength] = useState(Children.count(props.children));
 
@@ -75,25 +89,26 @@ export function Carousel(props: {
 }
 
 export function CarouselList(props: { children: ReactNode }) {
-  const [{ index }, { setLength, handleIndexChange }] =
-    useContext(CarouselContext);
-  const ref = useRef(null);
+  const context = useContext(CarouselContext);
+  if (!context) throw new Error('CarouselList must be used within a Carousel');
+  const [{ index }, { setLength, handleIndexChange }] = context;
+  const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setLength(Children.count(props.children));
   }, [props.children]);
 
   useEffect(() => {
-    const el = ref.current.childNodes[index];
-    if (el) {
-      el.parentNode.scrollLeft = el.offsetLeft;
+    const el = ref.current?.childNodes[index] as HTMLElement;
+    if (el && el.parentNode) {
+      (el.parentNode as HTMLElement).scrollLeft = el.offsetLeft;
     }
   }, []);
 
   useEffect(() => {
-    const el = ref.current.childNodes[index];
-    if (el) {
-      el.parentNode.scrollTo({
+    const el = ref.current?.childNodes[index] as HTMLElement;
+    if (el && el.parentNode) {
+      (el.parentNode as HTMLElement).scrollTo({
         left: el.offsetLeft,
         behavior: "smooth",
       });
@@ -103,9 +118,11 @@ export function CarouselList(props: { children: ReactNode }) {
   useEffect(() => {
     const handleScroll = () => {
       scrollDebounce(() => {
+        if (!ref.current) return;
         const els = ref.current.childNodes;
         for (let i = 0; i < els.length; i++) {
-          if (Math.abs(els[i].offsetLeft - ref.current.scrollLeft) < 10) {
+          const el = els[i] as HTMLElement;
+          if (Math.abs(el.offsetLeft - ref.current.scrollLeft) < 10) {
             if (handleIndexChange) {
               handleIndexChange({ index }, {}, { index: i });
             }
@@ -115,11 +132,12 @@ export function CarouselList(props: { children: ReactNode }) {
       }, 30);
     };
 
-    ref.current?.addEventListener("scroll", handleScroll);
+    const currentRef = ref.current;
+    currentRef?.addEventListener("scroll", handleScroll);
     return () => {
-      ref.current?.removeEventListener("scroll", handleScroll);
+      currentRef?.removeEventListener("scroll", handleScroll);
     };
-  }, [index]);
+  }, [index, handleIndexChange]);
 
   return (
     <section

@@ -140,7 +140,7 @@ function AppContent(props: {
     Content = (
       <Home
         index={app.taskListIds.indexOf(selectedTaskListId)}
-        handleIndexChange={(p, s, e) => {
+        handleIndexChange={(_, __, e) => {
           setSelectedTaskListId(app.taskListIds[e.index]);
         }}
         taskLists={app.taskListIds.map((tlid) => taskLists[tlid])}
