@@ -23,4 +23,5 @@ html {
   text-rendering: optimizeLegibility;
   text-box: trim-both cap alphabetic;
   color-scheme: light dark;
+  overscroll-behavior-x: none; /* Prevent iOS/iPad OS swipe back screen rendering */
 }
