@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": "*",
+    "fileSystem": "allow",
+    "network": "allow",
+    "subprocess": "allow",
+    "environment": "allow"
+  },
+  "enableAllProjectMcpServers": false
+}
