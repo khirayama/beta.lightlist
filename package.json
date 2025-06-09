@@ -1,5 +1,22 @@
 {
   "name": "lightlist",
   "private": true,
-  "workspaces": ["packages/sdk"]
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "test": "turbo run test",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "prettier": "3.5.3",
+    "turbo": "2.5.4"
+  },
+  "packageManager": "npm@10.8.1"
 }
