@@ -6,57 +6,69 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## コマンド
 
-### 開発・ビルド
+### 開発・ビルド（Turbo）
 ```bash
-# API開発サーバー起動
-cd packages/api && npm run dev
+# 全てのアプリの開発サーバー起動
+npm run dev
 
-# Web開発サーバー起動  
-cd packages/web && npm run dev
+# 個別アプリ開発サーバー起動
+cd apps/api && npm run dev      # ポート 3000
+cd apps/web && npm run dev      # ポート 3001  
+cd apps/sample && npm run dev   # ポート 3002
 
-# Sample開発サーバー起動（APIも同時起動）
-cd packages/sample && npm run dev
+# 全てのアプリをビルド
+npm run build
 
 # SDK ビルド
 cd packages/sdk && npm run build
 
 # API ビルド（Prisma含む）
-cd packages/api && npm run build
+cd apps/api && npm run build
 
-# Web ビルド
-cd packages/web && npm run build
+# Web ビルド（SDK依存）
+cd apps/web && npm run build:sdk && npm run build
 ```
 
 ### データベース・認証
 ```bash
 # Supabase起動
-cd packages/api && npm run supabase
+cd apps/api && npm run supabase
 
 # Prismaマイグレーション適用
-cd packages/api && npx prisma migrate dev
+cd apps/api && npx prisma migrate dev
 
 # Prismaクライアント生成
-cd packages/api && npx prisma generate
+cd apps/api && npx prisma generate
 
 # Prisma Studio起動
-cd packages/api && npx prisma studio
+cd apps/api && npx prisma studio
 ```
 
-### テスト
+### テスト・品質
 ```bash
+# 全てのテスト実行
+npm run test
+
 # API テスト実行
-cd packages/api && npm test
+cd apps/api && npm run test
+
+# 全てのlint実行
+npm run lint
+
+# 全ての型チェック実行
+npm run type-check
 ```
 
 ## アーキテクチャ
 
-### モノレポ構成
-- **packages/api**: Next.js API Routes + Prisma + Supabase
-- **packages/web**: React + Next.js メインアプリケーション
+### モノレポ構成（Turbo + npm workspaces）
+- **apps/api**: Next.js API Routes + Prisma + Supabase（ポート: 3000）
+- **apps/web**: React + Next.js メインアプリケーション（ポート: 3001）
+- **apps/sample**: SDK使用例・テスト用アプリ（ポート: 3002）
 - **packages/sdk**: TypeScript ライブラリ（状態管理・API通信）
-- **packages/sample**: SDK使用例・テスト用アプリ
 
 ### 主要技術
+- **モノレポ**: Turbo, npm workspaces
 - **フロントエンド**: React, Next.js, TypeScript, Tailwind CSS
 - **バックエンド**: Next.js API Routes, Prisma ORM
 - **データベース**: PostgreSQL (Supabase)
@@ -70,7 +82,7 @@ cd packages/api && npm test
 3. Supabase JWTトークンによる認証・認可
 
 ### 重要なファイル
-- `packages/api/prisma/schema.prisma`: データベーススキーマ
+- `apps/api/prisma/schema.prisma`: データベーススキーマ
 - `packages/sdk/src/store.ts`: 状態管理
-- `packages/web/src/appcomponents/TaskList.tsx`: メインUI
-- `packages/api/src/pages/api/`: API エンドポイント
+- `apps/web/src/appcomponents/TaskList.tsx`: メインUI
+- `apps/api/src/pages/api/`: API エンドポイント
